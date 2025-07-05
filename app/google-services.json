@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "875698661331",
+    "project_id": "miflete-5b86c",
+    "storage_bucket": "miflete-5b86c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:875698661331:android:bcabe1d66a1260cc0d3126",
+        "android_client_info": {
+          "package_name": "luis.aplimovil.miflete"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCzoz3YdCqWNT9ktvPoUmIg9FuCF1Ycd4s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
