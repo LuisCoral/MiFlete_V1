@@ -58,6 +58,8 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.firebase.auth.ktx)
     implementation(libs.firebase.firestore.ktx)
+    implementation(libs.androidx.espresso.core)
+    implementation(libs.androidx.animation.core.lint)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -71,5 +73,13 @@ dependencies {
     implementation ("androidx.compose.ui:ui:1.6.6")
     implementation ("androidx.compose.ui:ui-tooling-preview:1.6.6")
     implementation ("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
+
+
+    //Lotie
+    implementation ("com.airbnb.android:lottie-compose:6.2.0")
+
+    //Material3
+    implementation ("androidx.compose.material3:material3:1.2.0") // o versión actual
+    implementation ("androidx.compose.material:material-icons-extended:1.6.0")
 
 }
