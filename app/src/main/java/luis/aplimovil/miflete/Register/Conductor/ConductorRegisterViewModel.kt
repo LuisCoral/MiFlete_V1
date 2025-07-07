@@ -31,17 +31,16 @@ class ConductorRegisterViewModel : ViewModel() {
         onSuccess: () -> Unit,
         onError: (String) -> Unit
     ) {
-        // Crear usuario en Auth
+        // 1. Crea usuario en Auth
         auth.createUserWithEmailAndPassword(conductor.email, password)
             .addOnSuccessListener { authResult ->
                 val firebaseUser = authResult.user
                 if (firebaseUser != null) {
+                    // 2. Guarda la info en Firestore, con el UID recibido
                     val conductorConUid = conductor.copy(uid = firebaseUser.uid)
                     db.collection("Conductores").document(firebaseUser.uid)
                         .set(conductorConUid)
-                        .addOnSuccessListener {
-                            onSuccess()
-                        }
+                        .addOnSuccessListener { onSuccess() }
                         .addOnFailureListener { e ->
                             onError("Error guardando datos: ${e.message}")
                         }

@@ -34,16 +34,17 @@ import luis.aplimovil.miflete.R
 
 @Composable
 fun LoginScreen(
-    onLogin: (String, String) -> Unit = { _, _ -> },
-    onRegister: () -> Unit = {}
+    onLoginSuccess: () -> Unit = {},
+    onRegister: () -> Unit = {},
+    viewModel: LoginViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
 ) {
     val azul = Color(0xFF072A53)
     val naranja = Color(0xFFF47C20)
     val fondo = Color(0xFFFDF9F5)
 
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
+    val uiState by viewModel.uiState.collectAsState()
     var passwordVisible by remember { mutableStateOf(false) }
+    val context = LocalContext.current
 
     // Lottie animation setup
     val composition by rememberLottieComposition(LottieCompositionSpec.Asset("camion.json"))
@@ -53,6 +54,29 @@ fun LoginScreen(
         isPlaying = true
     )
 
+    // Navegar si loginSuccess es true
+    LaunchedEffect(uiState.loginSuccess) {
+        if (uiState.loginSuccess == true) {
+            onLoginSuccess()
+            viewModel.resetLoginResult()
+        } else if (uiState.loginSuccess == false) {
+            Toast.makeText(context, "Correo o contraseña incorrectos", Toast.LENGTH_SHORT).show()
+            viewModel.resetLoginResult()
+        }
+    }
+
+//    LaunchedEffect(uiState.loginSuccess, uiState.errorMsg) {
+//        if (uiState.loginSuccess == true) {
+//            onLoginSuccess()
+//            viewModel.resetLoginResult()
+//        } else if (uiState.loginSuccess == false) {
+//            uiState.errorMsg?.let { msg ->
+//                Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+//            }
+//            viewModel.resetLoginResult()
+//        }
+//    }
+
     Surface(
         modifier = Modifier
             .fillMaxSize()
@@ -60,7 +84,6 @@ fun LoginScreen(
         color = fondo
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
-            // Fondo animado
             LottieAnimation(
                 composition = composition,
                 progress = { progress },
@@ -83,16 +106,9 @@ fun LoginScreen(
                         .size(200.dp)
                         .padding(bottom = 16.dp)
                 )
-//                Text(
-//                    text = "MiFlete",
-//                    fontWeight = FontWeight.Bold,
-//                    fontSize = 36.sp,
-//                    color = azul,
-//                    modifier = Modifier.padding(bottom = 48.dp)
-//                )
                 OutlinedTextField(
-                    value = email,
-                    onValueChange = { email = it },
+                    value = uiState.emailOrPhone,
+                    onValueChange = { viewModel.onEmailOrPhoneChange(it) },
                     label = { Text("Correo electrónico") },
                     singleLine = true,
                     modifier = Modifier
@@ -100,8 +116,8 @@ fun LoginScreen(
                         .padding(bottom = 16.dp)
                 )
                 OutlinedTextField(
-                    value = password,
-                    onValueChange = { password = it },
+                    value = uiState.password,
+                    onValueChange = { viewModel.onPasswordChange(it) },
                     label = { Text("Contraseña") },
                     singleLine = true,
                     visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
@@ -121,7 +137,7 @@ fun LoginScreen(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Button(
-                        onClick = { onLogin(email, password) },
+                        onClick = { viewModel.login() },
                         colors = ButtonDefaults.buttonColors(containerColor = azul),
                         modifier = Modifier
                             .fillMaxWidth()

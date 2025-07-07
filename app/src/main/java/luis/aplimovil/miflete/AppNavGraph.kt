@@ -8,6 +8,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import luis.aplimovil.miflete.Home.HomeScreen
 import luis.aplimovil.miflete.Login.LoginScreen
 import luis.aplimovil.miflete.Register.Conductor.ConductorRegisterScreen
 import luis.aplimovil.miflete.Register.ConductorPoseedor.ConductorPoseedorRegisterScreen
@@ -34,6 +35,7 @@ fun AppNavGraph(
     ) {
         composable(AppDestinations.Login.route) {
             LoginScreen(
+                onLoginSuccess = { navController.navigate(AppDestinations.Home.route) },
                 onRegister = { navController.navigate(AppDestinations.SelectProfile.route) }
             )
         }
@@ -49,7 +51,8 @@ fun AppNavGraph(
         composable(AppDestinations.PropietarioRegister.route) {
             PropietarioRegisterScreen(navController = navController)
         }
-
-
+        composable(AppDestinations.Home.route) {
+            HomeScreen() // Asegúrate de tener este Composable creado
+        }
     }
 }
