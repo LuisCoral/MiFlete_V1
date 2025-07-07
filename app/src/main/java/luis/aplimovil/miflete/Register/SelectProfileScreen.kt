@@ -4,6 +4,7 @@ package luis.aplimovil.miflete.Register
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -11,6 +12,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -18,6 +20,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import luis.aplimovil.miflete.AppDestinations
+
+// Colores de la LoginScreen
+private val azul = Color(0xFF072A53)
+private val naranja = Color(0xFFF47C20)
+private val fondo = Color(0xFFFDF9F5)
 
 @Composable
 fun SelectProfileScreen(
@@ -28,36 +35,52 @@ fun SelectProfileScreen(
             Box(
                 Modifier
                     .fillMaxWidth()
-                    .background(Color(0xFF151E3D))
-                    .padding(top = 32.dp, bottom = 16.dp)
+                    .background(azul)
+                    .padding(bottom = 16.dp)
             ) {
+                // Botón de regreso circular y llamativo, separado del título
                 IconButton(
                     onClick = { navController.popBackStack() },
-                    modifier = Modifier.align(Alignment.CenterStart)
+                    modifier = Modifier
+                        .align(Alignment.TopStart)
+                        .padding(start = 16.dp, top = 36.dp) // margen respecto al borde superior e izquierdo
+                        .size(46.dp)
+                        .shadow(6.dp, CircleShape)
+                        .background(naranja, CircleShape)
                 ) {
-                    Icon(Icons.Default.ArrowBack, contentDescription = "Regresar", tint = Color.White)
+                    Icon(
+                        imageVector = Icons.Default.ArrowBack,
+                        contentDescription = "Regresar",
+                        tint = Color.White,
+                        modifier = Modifier.size(28.dp)
+                    )
                 }
+                // El título ahora tiene suficiente espacio arriba
                 Column(
-                    modifier = Modifier.align(Alignment.Center),
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .padding(top = 38.dp), // espacio para que no se encime con el botón
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        "Selecciona el tipo de perfil con el que te vas a registrar",
+                        "¡A registrarse! ",
                         color = Color.White,
                         textAlign = TextAlign.Center,
                         fontWeight = FontWeight.SemiBold,
                         fontSize = 18.sp,
-                        modifier = Modifier.padding(top = 12.dp)
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp)
                     )
                 }
             }
         },
-        containerColor = Color(0xFF151E3D)
+        containerColor = fondo
     ) { padding ->
         Column(
             modifier = Modifier
                 .padding(padding)
                 .fillMaxSize()
+                .background(fondo)
                 .padding(horizontal = 8.dp, vertical = 16.dp),
             verticalArrangement = Arrangement.spacedBy(20.dp, Alignment.Top),
         ) {
@@ -86,29 +109,36 @@ fun ProfileOptionCard(
     desc: String,
     onClick: () -> Unit
 ) {
-    Row(
+    Card(
+        shape = RoundedCornerShape(22.dp),
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color.White, RoundedCornerShape(20.dp))
             .clickable { onClick() }
-            .padding(16.dp),
-        verticalAlignment = Alignment.CenterVertically
+            .background(Color.Transparent),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
-        // Puedes agregar aquí una imagen si lo deseas, por ahora se omite según tu instrucción
-
-        Column(
-            modifier = Modifier.weight(1f)
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(Color.White, RoundedCornerShape(22.dp))
+                .padding(20.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(title, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = Color(0xFF151E3D))
-            Text(desc, fontSize = 14.sp, color = Color.DarkGray, modifier = Modifier.padding(top = 4.dp))
-            Button(
-                onClick = onClick,
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF4040)),
-                modifier = Modifier
-                    .padding(top = 12.dp)
-                    .align(Alignment.Start)
+            Column(
+                modifier = Modifier.weight(1f)
             ) {
-                Text("ES MI CASO", color = Color.White)
+                Text(title, fontWeight = FontWeight.Bold, fontSize = 17.sp, color = azul)
+                Text(desc, fontSize = 14.sp, color = Color.Gray, modifier = Modifier.padding(top = 4.dp))
+                Button(
+                    onClick = onClick,
+                    colors = ButtonDefaults.buttonColors(containerColor = naranja),
+                    modifier = Modifier
+                        .padding(top = 14.dp)
+                        .align(Alignment.Start),
+                    shape = RoundedCornerShape(10.dp)
+                ) {
+                    Text("¡ES MI CASO!", color = Color.White, fontWeight = FontWeight.Bold)
+                }
             }
         }
     }

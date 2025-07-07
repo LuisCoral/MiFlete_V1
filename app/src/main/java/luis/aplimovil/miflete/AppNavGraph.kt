@@ -20,7 +20,8 @@ enum class AppDestinations(val route: String) {
     SelectProfile("select_profile"),
     ConductorRegister("conductor_register"),
     ConductorPoseedorRegister("conductor_poseedor_register"),
-    PropietarioRegister("propietario_register")
+    PropietarioRegister("propietario_register"),
+    Home("home")
 }
 
 @Composable
@@ -48,5 +49,7 @@ fun AppNavGraph(
         composable(AppDestinations.PropietarioRegister.route) {
             PropietarioRegisterScreen(navController = navController)
         }
+
+
     }
 }

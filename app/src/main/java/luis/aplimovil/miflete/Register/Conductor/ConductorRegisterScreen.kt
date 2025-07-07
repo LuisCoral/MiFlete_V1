@@ -3,9 +3,11 @@ package luis.aplimovil.miflete.Register.Conductor
 
 
 import android.app.DatePickerDialog
+import androidx.compose.foundation.background
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -14,6 +16,8 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
 
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -22,6 +26,11 @@ import androidx.navigation.NavHostController
 import kotlinx.coroutines.launch
 
 import java.util.*
+
+// Colores amigables y coherentes con el resto de la app
+private val azul = Color(0xFF072A53)
+private val naranja = Color(0xFFF47C20)
+private val fondo = Color(0xFFFDF9F5)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -69,41 +78,83 @@ fun ConductorRegisterScreen(
     Scaffold(
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         topBar = {
-            TopAppBar(
-                title = { Text("Registro Conductor") },
-                navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Regresar")
-                    }
+            Box(
+                Modifier
+                    .fillMaxWidth()
+                    .background(azul)
+                    .padding(bottom = 12.dp)
+            ) {
+                // Botón regreso llamativo y separado del título
+                IconButton(
+                    onClick = { navController.popBackStack() },
+                    modifier = Modifier
+                        .align(Alignment.TopStart)
+                        .padding(start = 16.dp, top = 32.dp)
+                        .size(44.dp)
+                        .shadow(6.dp, CircleShape)
+                        .background(naranja, CircleShape)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.ArrowBack,
+                        contentDescription = "Regresar",
+                        tint = Color.White,
+                        modifier = Modifier.size(26.dp)
+                    )
                 }
-            )
-        }
+                // Título centrado y visible
+                Text(
+                    "Registro Conductor",
+                    color = Color.White,
+                    style = MaterialTheme.typography.titleLarge,
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .padding(top = 40.dp)
+                )
+            }
+        },
+        containerColor = fondo
     ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
+                .background(fondo)
                 .padding(16.dp)
                 .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             OutlinedTextField(
                 value = nombres,
                 onValueChange = { nombres = it },
                 label = { Text("Nombres") },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = azul,
+                    focusedLabelColor = azul
+                )
             )
             OutlinedTextField(
                 value = apellidos,
                 onValueChange = { apellidos = it },
                 label = { Text("Apellidos") },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = azul,
+                    focusedLabelColor = azul
+                )
             )
             OutlinedTextField(
                 value = cedula,
                 onValueChange = { cedula = it },
                 label = { Text("Cédula") },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = azul,
+                    focusedLabelColor = azul
+                )
             )
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -114,15 +165,21 @@ fun ConductorRegisterScreen(
                     onValueChange = {},
                     label = { Text("Fecha de expedición") },
                     enabled = false,
-                    modifier = Modifier
-                        .weight(1f)
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        disabledBorderColor = azul,
+                        disabledLabelColor = azul
+                    )
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Button(
                     onClick = { showDatePicker { fechaExpedicion = it } },
+                    colors = ButtonDefaults.buttonColors(containerColor = naranja),
+                    shape = RoundedCornerShape(10.dp),
                     modifier = Modifier
                 ) {
-                    Text("Seleccionar")
+                    Text("Seleccionar", color = Color.White)
                 }
             }
             Row(
@@ -134,46 +191,77 @@ fun ConductorRegisterScreen(
                     onValueChange = {},
                     label = { Text("Fecha de nacimiento") },
                     enabled = false,
-                    modifier = Modifier
-                        .weight(1f)
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        disabledBorderColor = azul,
+                        disabledLabelColor = azul
+                    )
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Button(
                     onClick = { showDatePicker { fechaNacimiento = it } },
+                    colors = ButtonDefaults.buttonColors(containerColor = naranja),
+                    shape = RoundedCornerShape(10.dp),
                     modifier = Modifier
                 ) {
-                    Text("Seleccionar")
+                    Text("Seleccionar", color = Color.White)
                 }
             }
             OutlinedTextField(
                 value = lugarExpedicion,
                 onValueChange = { lugarExpedicion = it },
                 label = { Text("Lugar de expedición") },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = azul,
+                    focusedLabelColor = azul
+                )
             )
             OutlinedTextField(
                 value = telefono,
                 onValueChange = { telefono = it },
                 label = { Text("Teléfono") },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = azul,
+                    focusedLabelColor = azul
+                )
             )
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it },
                 label = { Text("Email") },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = azul,
+                    focusedLabelColor = azul
+                )
             )
             OutlinedTextField(
                 value = ciudadResidencia,
                 onValueChange = { ciudadResidencia = it },
                 label = { Text("Ciudad de residencia") },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = azul,
+                    focusedLabelColor = azul
+                )
             )
             OutlinedTextField(
                 value = direccion,
                 onValueChange = { direccion = it },
                 label = { Text("Dirección") },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = azul,
+                    focusedLabelColor = azul
+                )
             )
             ExposedDropdownMenuBox(
                 expanded = expanded,
@@ -188,7 +276,12 @@ fun ConductorRegisterScreen(
                     trailingIcon = {
                         ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
                     },
-                    modifier = Modifier.menuAnchor().fillMaxWidth()
+                    modifier = Modifier.menuAnchor().fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = azul,
+                        focusedLabelColor = azul
+                    )
                 )
                 ExposedDropdownMenu(
                     expanded = expanded,
@@ -210,7 +303,12 @@ fun ConductorRegisterScreen(
                 onValueChange = { password = it },
                 label = { Text("Contraseña") },
                 modifier = Modifier.fillMaxWidth(),
-                visualTransformation = PasswordVisualTransformation()
+                visualTransformation = PasswordVisualTransformation(),
+                shape = RoundedCornerShape(12.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = azul,
+                    focusedLabelColor = azul
+                )
             )
             Button(
                 onClick = {
@@ -259,9 +357,10 @@ fun ConductorRegisterScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 10.dp),
-                shape = RoundedCornerShape(8.dp)
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = naranja)
             ) {
-                Text("Registrar")
+                Text("Registrar", color = Color.White)
             }
         }
     }
