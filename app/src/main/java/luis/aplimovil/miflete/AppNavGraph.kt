@@ -52,7 +52,14 @@ fun AppNavGraph(
             PropietarioRegisterScreen(navController = navController)
         }
         composable(AppDestinations.Home.route) {
-            HomeScreen() // Asegúrate de tener este Composable creado
+            HomeScreen(
+                onLogout = {
+                    navController.navigate(AppDestinations.Login.route) {
+                        popUpTo(0) // Limpia todo el backstack
+                        launchSingleTop = true
+                    }
+                }
+            )
         }
     }
 }
