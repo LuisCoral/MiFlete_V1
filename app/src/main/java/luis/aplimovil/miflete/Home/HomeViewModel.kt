@@ -10,7 +10,8 @@ import kotlinx.coroutines.flow.StateFlow
 data class UserInfo(
     val nombres: String = "",
     val apellidos: String = "",
-    val correo: String = ""
+    val correo: String = "",
+    val rol: String = ""
 ) {
     val nombreCompleto: String
         get() = listOf(nombres, apellidos).filter { it.isNotBlank() }.joinToString(" ")
@@ -46,7 +47,8 @@ class HomeViewModel : ViewModel() {
                 val nombres = doc.getString("nombres") ?: ""
                 val apellidos = doc.getString("apellidos") ?: ""
                 val correo = doc.getString("correo") ?: auth.currentUser?.email.orEmpty()
-                _user.value = UserInfo(nombres, apellidos, correo)
+                val rol = doc.getString("rol") ?: coleccion // Si no existe, usa el nombre de la colección, o pon ""
+                _user.value = UserInfo(nombres, apellidos, correo, rol)
                 userCollection = coleccion
             } else {
                 buscarEnColecciones(uid, index + 1)
@@ -78,7 +80,8 @@ class HomeViewModel : ViewModel() {
             db.collection(coleccion).document(uid)
                 .update(updates)
                 .addOnSuccessListener {
-                    _user.value = UserInfo(nombres, apellidos, correo)
+                    // Conserva el rol anterior
+                    _user.value = UserInfo(nombres, apellidos, correo, user?.let { _user.value.rol } ?: "")
                     onSuccess()
                 }
                 .addOnFailureListener { e ->

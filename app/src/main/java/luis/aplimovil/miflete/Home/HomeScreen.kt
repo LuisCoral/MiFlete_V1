@@ -31,23 +31,20 @@ import com.google.firebase.auth.FirebaseAuth
 import luis.aplimovil.miflete.CrearViaje.CrearViajeScreen
 import luis.aplimovil.miflete.R
 import androidx.compose.runtime.*
-
-
-
+import androidx.compose.ui.graphics.Brush
 
 
 private val azul = Color(0xFF072A53)
 private val naranja = Color(0xFFF47C20)
 private val fondo = Color(0xFFFDF9F5)
+private val rolGradient = Brush.horizontalGradient(listOf(naranja, azul))
 
 @Composable
 fun HomeScreen(
     viewModel: HomeViewModel = androidx.lifecycle.viewmodel.compose.viewModel(),
     onLogout: () -> Unit
 ) {
-    var selectedTab by remember { mutableStateOf(1) } // 0: CrearViaje, 1: Home, 2: Usuario
-
-    // Modal de usuario
+    var selectedTab by remember { mutableStateOf(1) }
     val userInfo by viewModel.user.collectAsState()
     var showUserInfo by remember { mutableStateOf(false) }
     var editMode by remember { mutableStateOf(false) }
@@ -66,8 +63,44 @@ fun HomeScreen(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(bottom = 70.dp) // Espacio para el menú inferior
+                    .padding(bottom = 70.dp)
             ) {
+                // Barra superior llamativa mostrando el rol
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(brush = rolGradient, shape = RoundedCornerShape(bottomStart = 0.dp, bottomEnd = 0.dp, topStart = 0.dp, topEnd = 0.dp))
+                        .padding(vertical = 18.dp)
+                ) {
+                    Row(
+                        Modifier.align(Alignment.Center),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Person,
+                            contentDescription = "Rol",
+                            tint = Color.White,
+                            modifier = Modifier
+                                .padding(end = 8.dp)
+                                .size(28.dp)
+                        )
+                        Text(
+                            text = userInfo.rol.uppercase(),
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 22.sp,
+                            modifier = Modifier
+                                .background(
+                                    color = Color.White.copy(alpha = 0.10f),
+                                    shape = RoundedCornerShape(12.dp)
+                                )
+                                .padding(horizontal = 16.dp, vertical = 4.dp)
+                        )
+                    }
+                }
+
+                // El resto de la UI central según la pestaña
                 when (selectedTab) {
                     0 -> {
                         CrearViajeScreen(
@@ -75,9 +108,10 @@ fun HomeScreen(
                         )
                     }
                     1 -> {
-                        // Aquí puedes poner tu contenido de "pantalla principal"
                         Box(
-                            Modifier.fillMaxSize(),
+                            Modifier
+                                .fillMaxSize()
+                                .padding(top = 16.dp),
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
@@ -92,7 +126,7 @@ fun HomeScreen(
                 }
             }
 
-            // Card de información de usuario (modal)
+            // Modal info usuario
             if (showUserInfo) {
                 Box(
                     modifier = Modifier
@@ -260,17 +294,18 @@ fun HomeScreen(
                 }
             }
 
+            // Menú inferior interactivo SIEMPRE visible
             BottomNavigationBar(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .fillMaxWidth(),
                 selectedIndex = selectedTab,
                 onSearchClick = {
-                    showUserInfo = false // Cierra modal si está abierto
+                    showUserInfo = false
                     selectedTab = 0
                 },
                 onHomeClick = {
-                    showUserInfo = false // Cierra modal si está abierto
+                    showUserInfo = false
                     selectedTab = 1
                 },
                 onUserClick = { showUserInfo = true }
@@ -278,4 +313,6 @@ fun HomeScreen(
         }
     }
 }
+
+
 

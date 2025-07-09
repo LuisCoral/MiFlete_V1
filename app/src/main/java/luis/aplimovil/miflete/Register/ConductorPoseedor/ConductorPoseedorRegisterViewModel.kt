@@ -18,7 +18,8 @@ data class ConductorPoseedor(
     val email: String = "",
     val ciudadResidencia: String = "",
     val direccion: String = "",
-    val categoriaLicencia: String = ""
+    val categoriaLicencia: String = "",
+    val rol: String = "Conductor Poseedor" // <-- por defecto
 )
 
 class ConductorPoseedorRegisterViewModel : ViewModel() {

@@ -18,7 +18,8 @@ data class Propietario(
     val email: String = "",
     val ciudadResidencia: String = "",
     val direccion: String = "",
-    val categoriaLicencia: String = ""
+    val categoriaLicencia: String = "",
+    val rol: String = "Propietario" // <-- por defecto
 )
 
 class PropietarioRegisterViewModel : ViewModel() {
