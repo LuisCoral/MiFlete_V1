@@ -28,7 +28,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.google.firebase.auth.FirebaseAuth
+import luis.aplimovil.miflete.CrearViaje.CrearViajeScreen
 import luis.aplimovil.miflete.R
+import androidx.compose.runtime.*
+
+
+
+
 
 private val azul = Color(0xFF072A53)
 private val naranja = Color(0xFFF47C20)
@@ -37,8 +43,11 @@ private val fondo = Color(0xFFFDF9F5)
 @Composable
 fun HomeScreen(
     viewModel: HomeViewModel = androidx.lifecycle.viewmodel.compose.viewModel(),
-    onLogout: () -> Unit // <-- AGREGADO
+    onLogout: () -> Unit
 ) {
+    var selectedTab by remember { mutableStateOf(1) } // 0: CrearViaje, 1: Home, 2: Usuario
+
+    // Modal de usuario
     val userInfo by viewModel.user.collectAsState()
     var showUserInfo by remember { mutableStateOf(false) }
     var editMode by remember { mutableStateOf(false) }
@@ -54,7 +63,36 @@ fun HomeScreen(
         Box(
             modifier = Modifier.fillMaxSize()
         ) {
-            // Card de información de usuario (modal encima del contenido)
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(bottom = 70.dp) // Espacio para el menú inferior
+            ) {
+                when (selectedTab) {
+                    0 -> {
+                        CrearViajeScreen(
+                            onViajeCreado = { selectedTab = 1 }
+                        )
+                    }
+                    1 -> {
+                        // Aquí puedes poner tu contenido de "pantalla principal"
+                        Box(
+                            Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                "Bienvenido, ${userInfo.nombreCompleto.ifBlank { "usuario" }}",
+                                color = azul,
+                                fontSize = 22.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+                    // El modal de usuario se abre aparte, no como tab
+                }
+            }
+
+            // Card de información de usuario (modal)
             if (showUserInfo) {
                 Box(
                     modifier = Modifier
@@ -77,7 +115,6 @@ fun HomeScreen(
                                 .padding(vertical = 32.dp, horizontal = 20.dp)
                                 .fillMaxWidth()
                         ) {
-                            // Imagen de usuario por defecto
                             Image(
                                 painter = painterResource(id = R.drawable.user),
                                 contentDescription = "Foto del usuario",
@@ -194,7 +231,6 @@ fun HomeScreen(
                                     }
                                     OutlinedButton(
                                         onClick = {
-                                            // Cancela y restaura los valores originales
                                             editedNombres = userInfo.nombres
                                             editedApellidos = userInfo.apellidos
                                             editedEmail = userInfo.correo
@@ -224,16 +260,22 @@ fun HomeScreen(
                 }
             }
 
-            // Menú interactivo inferior
             BottomNavigationBar(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .fillMaxWidth(),
-                onUserClick = {
-                    editMode = false
-                    showUserInfo = true
-                }
+                selectedIndex = selectedTab,
+                onSearchClick = {
+                    showUserInfo = false // Cierra modal si está abierto
+                    selectedTab = 0
+                },
+                onHomeClick = {
+                    showUserInfo = false // Cierra modal si está abierto
+                    selectedTab = 1
+                },
+                onUserClick = { showUserInfo = true }
             )
         }
     }
 }
+
