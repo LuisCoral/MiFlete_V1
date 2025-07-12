@@ -1,27 +1,29 @@
 package luis.aplimovil.miflete.CrearViaje
 
+import android.widget.Toast
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.graphics.Color
+import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import android.widget.Toast
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.platform.LocalContext
 
 private val azul = Color(0xFF072A53)
 private val naranja = Color(0xFFF47C20)
 private val fondo = Color(0xFFFDF9F5)
 
 @Composable
-fun CrearViajeScreen(
-    onViajeCreado: () -> Unit
+fun CrearFleteScreen(
+    onFleteCreado: () -> Unit
 ) {
     var mercancia by remember { mutableStateOf("") }
     var peso by remember { mutableStateOf("") }
@@ -219,10 +221,10 @@ fun CrearViajeScreen(
                             val db = FirebaseFirestore.getInstance()
                             val currentUser = auth.currentUser
 
-                            val viaje = hashMapOf(
+                            val flete = hashMapOf(
                                 "idCreador" to (currentUser?.uid ?: ""),
                                 "nombreCreador" to (currentUser?.displayName ?: ""),
-                                "fechaCreacion" to com.google.firebase.Timestamp.now(),
+                                "fechaCreacion" to Timestamp.now(),
                                 "mercancia" to mercancia,
                                 "pesoAproximado" to peso.toDoubleOrNull(),
                                 "partida" to partida,
@@ -234,12 +236,12 @@ fun CrearViajeScreen(
                                 "fotos" to listOf<String>()
                             )
 
-                            db.collection("Viajes")
-                                .add(viaje)
+                            db.collection("fletes")
+                                .add(flete)
                                 .addOnSuccessListener {
                                     loading = false
                                     Toast.makeText(context, "Flete creado correctamente", Toast.LENGTH_SHORT).show()
-                                    onViajeCreado()
+                                    onFleteCreado()
                                 }
                                 .addOnFailureListener { e ->
                                     error = "Error al crear el flete: ${e.localizedMessage}"
