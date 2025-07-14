@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.List
+import androidx.compose.material.icons.filled.LocalShipping
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -16,12 +17,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.graphics.Brush
+import androidx.navigation.NavHostController
 import luis.aplimovil.miflete.CrearViaje.CrearFleteScreen
 import luis.aplimovil.miflete.CrearViaje.FletesViewModel
 import luis.aplimovil.miflete.Mapas.PantallaMapaConPermiso
@@ -36,6 +39,7 @@ private val rolGradient = Brush.horizontalGradient(listOf(naranja, azul))
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
+    navController: NavHostController,
     viewModel: HomeViewModel = androidx.lifecycle.viewmodel.compose.viewModel(),
     fletesViewModel: FletesViewModel = androidx.lifecycle.viewmodel.compose.viewModel(),
     onLogout: () -> Unit
@@ -105,22 +109,42 @@ fun HomeScreen(
                     1 -> {
                         Box(Modifier.fillMaxSize()) {
                             PantallaMapaConPermiso()
-                            FloatingActionButton(
+
+                            // Botón llamativo para ver fletes
+                            ExtendedFloatingActionButton(
                                 onClick = { showSheet = true },
+                                icon = {
+                                    Icon(
+                                        Icons.Default.LocalShipping, // Ícono de camión (puedes cambiar por otro)
+                                        contentDescription = "Ver fletes",
+                                        modifier = Modifier.size(32.dp)
+                                    )
+                                },
+                                text = {
+                                    Text(
+                                        "¡Ver Fletes Disponibles!",
+                                        fontSize = 20.sp,
+                                        fontWeight = FontWeight.Bold,
+                                    )
+                                },
                                 containerColor = naranja,
+                                contentColor = Color.White,
                                 modifier = Modifier
                                     .align(Alignment.BottomEnd)
                                     .padding(24.dp)
-                            ) {
-                                Icon(Icons.Default.List, contentDescription = "Ver fletes")
-                            }
+                                    .shadow(16.dp, shape = RoundedCornerShape(32.dp))
+                                    .height(64.dp)
+                            )
+
                             // LLAMADA AL NUEVO BOTTOM SHEET
                             if (showSheet) {
                                 FletesBottomSheet(
                                     fletes = fletes,
                                     azul = azul,
                                     naranja = naranja,
-                                    onClose = { showSheet = false }
+                                    onClose = { showSheet = false },
+                                    onActualizar = { fletesViewModel.cargarFletes() },
+                                    navController = navController
                                 )
                             }
                         }

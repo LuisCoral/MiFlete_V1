@@ -3,7 +3,9 @@ package luis.aplimovil.miflete.CrearViaje
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -16,6 +18,15 @@ import androidx.compose.ui.unit.sp
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import java.util.Calendar
+import android.app.DatePickerDialog
+import android.app.TimePickerDialog
+import androidx.compose.foundation.clickable
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DateRange
+
+import java.util.*
+
 
 private val azul = Color(0xFF072A53)
 private val naranja = Color(0xFFF47C20)
@@ -34,8 +45,10 @@ fun CrearFleteScreen(
     var observaciones by remember { mutableStateOf("") }
     var loading by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
-
     val context = LocalContext.current
+
+    // Soporte para Date y Time picker
+    val calendar = remember { Calendar.getInstance() }
 
     Surface(
         color = fondo,
@@ -47,17 +60,19 @@ fun CrearFleteScreen(
         ) {
             Card(
                 modifier = Modifier
-                    .padding(top = 32.dp, start = 16.dp, end = 16.dp)
+                    .padding(top = 32.dp, start = 16.dp, end = 16.dp, bottom = 16.dp)
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(32.dp)),
                 colors = CardDefaults.cardColors(containerColor = Color.White),
                 elevation = CardDefaults.cardElevation(10.dp),
                 shape = RoundedCornerShape(32.dp)
             ) {
+                // Hacer la columna desplazable
                 Column(
                     modifier = Modifier
                         .padding(horizontal = 24.dp, vertical = 32.dp)
-                        .fillMaxWidth(),
+                        .fillMaxWidth()
+                        .verticalScroll(rememberScrollState()),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     Text(
@@ -145,13 +160,80 @@ fun CrearFleteScreen(
                             unfocusedContainerColor = Color(0xFFF9F9FF)
                         )
                     )
+                    // Campo de fecha con calendario y hora
                     OutlinedTextField(
                         value = fechaPartida,
-                        onValueChange = { fechaPartida = it },
-                        label = { Text("Fecha de salida (ej: 2025-07-10 08:00)", color = azul) },
+                        onValueChange = {},
+                        readOnly = true,
+                        enabled = true,
+                        label = { Text("Fecha de salida", color = azul) },
+                        trailingIcon = {
+                            IconButton(onClick = {
+                                // Primero pide la fecha
+                                DatePickerDialog(
+                                    context,
+                                    { _, year, month, dayOfMonth ->
+                                        calendar.set(Calendar.YEAR, year)
+                                        calendar.set(Calendar.MONTH, month)
+                                        calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth)
+                                        // Luego pide la hora
+                                        TimePickerDialog(
+                                            context,
+                                            { _, hour, minute ->
+                                                calendar.set(Calendar.HOUR_OF_DAY, hour)
+                                                calendar.set(Calendar.MINUTE, minute)
+                                                val fechaFormateada = String.format(
+                                                    "%04d-%02d-%02d %02d:%02d",
+                                                    year, month + 1, dayOfMonth, hour, minute
+                                                )
+                                                fechaPartida = fechaFormateada
+                                            },
+                                            calendar.get(Calendar.HOUR_OF_DAY),
+                                            calendar.get(Calendar.MINUTE),
+                                            true
+                                        ).show()
+                                    },
+                                    calendar.get(Calendar.YEAR),
+                                    calendar.get(Calendar.MONTH),
+                                    calendar.get(Calendar.DAY_OF_MONTH)
+                                ).show()
+                            }) {
+                                Icon(Icons.Default.DateRange, contentDescription = "Seleccionar fecha")
+                            }
+                        },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clip(RoundedCornerShape(18.dp)),
+                            .clip(RoundedCornerShape(18.dp))
+                            .clickable {
+                                // Igual que el icono: abre el DatePicker
+                                DatePickerDialog(
+                                    context,
+                                    { _, year, month, dayOfMonth ->
+                                        calendar.set(Calendar.YEAR, year)
+                                        calendar.set(Calendar.MONTH, month)
+                                        calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth)
+                                        // Luego pide la hora
+                                        TimePickerDialog(
+                                            context,
+                                            { _, hour, minute ->
+                                                calendar.set(Calendar.HOUR_OF_DAY, hour)
+                                                calendar.set(Calendar.MINUTE, minute)
+                                                val fechaFormateada = String.format(
+                                                    "%04d-%02d-%02d %02d:%02d",
+                                                    year, month + 1, dayOfMonth, hour, minute
+                                                )
+                                                fechaPartida = fechaFormateada
+                                            },
+                                            calendar.get(Calendar.HOUR_OF_DAY),
+                                            calendar.get(Calendar.MINUTE),
+                                            true
+                                        ).show()
+                                    },
+                                    calendar.get(Calendar.YEAR),
+                                    calendar.get(Calendar.MONTH),
+                                    calendar.get(Calendar.DAY_OF_MONTH)
+                                ).show()
+                            },
                         singleLine = true,
                         shape = RoundedCornerShape(18.dp),
                         colors = OutlinedTextFieldDefaults.colors(
@@ -209,7 +291,6 @@ fun CrearFleteScreen(
                     Button(
                         enabled = !loading,
                         onClick = {
-                            // Validación básica
                             if (mercancia.isBlank() || partida.isBlank() || destino.isBlank() || fechaPartida.isBlank()) {
                                 error = "Por favor completa los campos obligatorios"
                                 return@Button
@@ -238,10 +319,18 @@ fun CrearFleteScreen(
 
                             db.collection("fletes")
                                 .add(flete)
-                                .addOnSuccessListener {
-                                    loading = false
-                                    Toast.makeText(context, "Flete creado correctamente", Toast.LENGTH_SHORT).show()
-                                    onFleteCreado()
+                                .addOnSuccessListener { documentRef ->
+                                    // Aquí actualizamos el campo 'id' con el ID del documento creado
+                                    documentRef.update("id", documentRef.id)
+                                        .addOnSuccessListener {
+                                            loading = false
+                                            Toast.makeText(context, "Flete creado correctamente", Toast.LENGTH_SHORT).show()
+                                            onFleteCreado()
+                                        }
+                                        .addOnFailureListener { e ->
+                                            error = "Error al actualizar el id del flete: ${e.localizedMessage}"
+                                            loading = false
+                                        }
                                 }
                                 .addOnFailureListener { e ->
                                     error = "Error al crear el flete: ${e.localizedMessage}"
