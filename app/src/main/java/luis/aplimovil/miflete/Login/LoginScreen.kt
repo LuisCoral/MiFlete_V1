@@ -30,8 +30,6 @@ import com.airbnb.lottie.compose.animateLottieCompositionAsState
 import com.airbnb.lottie.compose.rememberLottieComposition
 import luis.aplimovil.miflete.R
 
-
-
 @Composable
 fun LoginScreen(
     onLoginSuccess: () -> Unit = {},
@@ -54,7 +52,6 @@ fun LoginScreen(
         isPlaying = true
     )
 
-    // Navegar si loginSuccess es true
     LaunchedEffect(uiState.loginSuccess) {
         if (uiState.loginSuccess == true) {
             onLoginSuccess()
@@ -64,18 +61,6 @@ fun LoginScreen(
             viewModel.resetLoginResult()
         }
     }
-
-//    LaunchedEffect(uiState.loginSuccess, uiState.errorMsg) {
-//        if (uiState.loginSuccess == true) {
-//            onLoginSuccess()
-//            viewModel.resetLoginResult()
-//        } else if (uiState.loginSuccess == false) {
-//            uiState.errorMsg?.let { msg ->
-//                Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
-//            }
-//            viewModel.resetLoginResult()
-//        }
-//    }
 
     Surface(
         modifier = Modifier
@@ -111,6 +96,7 @@ fun LoginScreen(
                     onValueChange = { viewModel.onEmailOrPhoneChange(it) },
                     label = { Text("Correo electrónico") },
                     singleLine = true,
+                    shape = RoundedCornerShape(18.dp), // redondez amigable
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(bottom = 16.dp)
@@ -120,6 +106,7 @@ fun LoginScreen(
                     onValueChange = { viewModel.onPasswordChange(it) },
                     label = { Text("Contraseña") },
                     singleLine = true,
+                    shape = RoundedCornerShape(18.dp), // redondez amigable
                     visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                     trailingIcon = {
                         val icon = if (passwordVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility
@@ -171,3 +158,145 @@ fun LoginScreen(
         }
     }
 }
+
+
+
+//@Composable
+//fun LoginScreen(
+//    onLoginSuccess: () -> Unit = {},
+//    onRegister: () -> Unit = {},
+//    viewModel: LoginViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
+//) {
+//    val azul = Color(0xFF072A53)
+//    val naranja = Color(0xFFF47C20)
+//    val fondo = Color(0xFFFDF9F5)
+//
+//    val uiState by viewModel.uiState.collectAsState()
+//    var passwordVisible by remember { mutableStateOf(false) }
+//    val context = LocalContext.current
+//
+//    // Lottie animation setup
+//    val composition by rememberLottieComposition(LottieCompositionSpec.Asset("camion.json"))
+//    val progress by animateLottieCompositionAsState(
+//        composition,
+//        iterations = LottieConstants.IterateForever,
+//        isPlaying = true
+//    )
+//
+//    // Navegar si loginSuccess es true
+//    LaunchedEffect(uiState.loginSuccess) {
+//        if (uiState.loginSuccess == true) {
+//            onLoginSuccess()
+//            viewModel.resetLoginResult()
+//        } else if (uiState.loginSuccess == false) {
+//            Toast.makeText(context, "Correo o contraseña incorrectos", Toast.LENGTH_SHORT).show()
+//            viewModel.resetLoginResult()
+//        }
+//    }
+//
+////    LaunchedEffect(uiState.loginSuccess, uiState.errorMsg) {
+////        if (uiState.loginSuccess == true) {
+////            onLoginSuccess()
+////            viewModel.resetLoginResult()
+////        } else if (uiState.loginSuccess == false) {
+////            uiState.errorMsg?.let { msg ->
+////                Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+////            }
+////            viewModel.resetLoginResult()
+////        }
+////    }
+//
+//    Surface(
+//        modifier = Modifier
+//            .fillMaxSize()
+//            .background(fondo),
+//        color = fondo
+//    ) {
+//        Box(modifier = Modifier.fillMaxSize()) {
+//            LottieAnimation(
+//                composition = composition,
+//                progress = { progress },
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .height(220.dp)
+//                    .align(Alignment.BottomCenter)
+//            )
+//            Column(
+//                modifier = Modifier
+//                    .fillMaxSize()
+//                    .padding(horizontal = 32.dp),
+//                verticalArrangement = Arrangement.Center,
+//                horizontalAlignment = Alignment.CenterHorizontally
+//            ) {
+//                Image(
+//                    painter = painterResource(id = R.drawable.icono),
+//                    contentDescription = "Logo de la app",
+//                    modifier = Modifier
+//                        .size(200.dp)
+//                        .padding(bottom = 16.dp)
+//                )
+//                OutlinedTextField(
+//                    value = uiState.emailOrPhone,
+//                    onValueChange = { viewModel.onEmailOrPhoneChange(it) },
+//                    label = { Text("Correo electrónico") },
+//                    singleLine = true,
+//                    modifier = Modifier
+//                        .fillMaxWidth()
+//                        .padding(bottom = 16.dp)
+//                )
+//                OutlinedTextField(
+//                    value = uiState.password,
+//                    onValueChange = { viewModel.onPasswordChange(it) },
+//                    label = { Text("Contraseña") },
+//                    singleLine = true,
+//                    visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+//                    trailingIcon = {
+//                        val icon = if (passwordVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility
+//                        IconButton(onClick = { passwordVisible = !passwordVisible }) {
+//                            Icon(imageVector = icon, contentDescription = "Mostrar/Ocultar contraseña")
+//                        }
+//                    },
+//                    modifier = Modifier
+//                        .fillMaxWidth()
+//                        .padding(bottom = 32.dp)
+//                )
+//                Column(
+//                    modifier = Modifier.fillMaxWidth(),
+//                    verticalArrangement = Arrangement.spacedBy(16.dp),
+//                    horizontalAlignment = Alignment.CenterHorizontally
+//                ) {
+//                    Button(
+//                        onClick = { viewModel.login() },
+//                        colors = ButtonDefaults.buttonColors(containerColor = azul),
+//                        modifier = Modifier
+//                            .fillMaxWidth()
+//                            .height(56.dp),
+//                        shape = RoundedCornerShape(14.dp)
+//                    ) {
+//                        Text(
+//                            text = "Iniciar sesión",
+//                            fontSize = 20.sp,
+//                            color = Color.White,
+//                            fontWeight = FontWeight.SemiBold
+//                        )
+//                    }
+//                    Button(
+//                        onClick = onRegister,
+//                        colors = ButtonDefaults.buttonColors(containerColor = naranja),
+//                        modifier = Modifier
+//                            .fillMaxWidth()
+//                            .height(56.dp),
+//                        shape = RoundedCornerShape(14.dp)
+//                    ) {
+//                        Text(
+//                            text = "Crear cuenta",
+//                            fontSize = 20.sp,
+//                            color = Color.White,
+//                            fontWeight = FontWeight.SemiBold
+//                        )
+//                    }
+//                }
+//            }
+//        }
+//    }
+//}
