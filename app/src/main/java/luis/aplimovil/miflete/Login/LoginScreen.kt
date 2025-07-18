@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lint.kotlin.metadata.Visibility
+import androidx.navigation.NavHostController
 import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.LottieConstants
@@ -30,10 +31,10 @@ import com.airbnb.lottie.compose.animateLottieCompositionAsState
 import com.airbnb.lottie.compose.rememberLottieComposition
 import luis.aplimovil.miflete.R
 
+
 @Composable
 fun LoginScreen(
-    onLoginSuccess: () -> Unit = {},
-    onRegister: () -> Unit = {},
+    navController: NavHostController,
     viewModel: LoginViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
 ) {
     val azul = Color(0xFF072A53)
@@ -44,7 +45,6 @@ fun LoginScreen(
     var passwordVisible by remember { mutableStateOf(false) }
     val context = LocalContext.current
 
-    // Lottie animation setup
     val composition by rememberLottieComposition(LottieCompositionSpec.Asset("camion.json"))
     val progress by animateLottieCompositionAsState(
         composition,
@@ -52,12 +52,17 @@ fun LoginScreen(
         isPlaying = true
     )
 
-    LaunchedEffect(uiState.loginSuccess) {
-        if (uiState.loginSuccess == true) {
-            onLoginSuccess()
+    // Navegación condicional según el rol
+    LaunchedEffect(uiState.loginSuccess, uiState.userRole) {
+        if (uiState.loginSuccess == true && uiState.userRole != null) {
+            when (uiState.userRole) {
+                "Cliente" -> navController.navigate("HomeClienteScreen")
+                "Conductor", "Propietarios", "ConductorPropietario" -> navController.navigate("HomePropietarioScreen")
+                else -> Toast.makeText(context, "Rol no reconocido", Toast.LENGTH_SHORT).show()
+            }
             viewModel.resetLoginResult()
         } else if (uiState.loginSuccess == false) {
-            Toast.makeText(context, "Correo o contraseña incorrectos", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, uiState.errorMsg ?: "Correo o contraseña incorrectos", Toast.LENGTH_SHORT).show()
             viewModel.resetLoginResult()
         }
     }
@@ -92,11 +97,11 @@ fun LoginScreen(
                         .padding(bottom = 16.dp)
                 )
                 OutlinedTextField(
-                    value = uiState.emailOrPhone,
-                    onValueChange = { viewModel.onEmailOrPhoneChange(it) },
+                    value = uiState.email,
+                    onValueChange = { viewModel.onEmailChange(it) },
                     label = { Text("Correo electrónico") },
                     singleLine = true,
-                    shape = RoundedCornerShape(18.dp), // redondez amigable
+                    shape = RoundedCornerShape(18.dp),
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(bottom = 16.dp)
@@ -106,10 +111,10 @@ fun LoginScreen(
                     onValueChange = { viewModel.onPasswordChange(it) },
                     label = { Text("Contraseña") },
                     singleLine = true,
-                    shape = RoundedCornerShape(18.dp), // redondez amigable
+                    shape = RoundedCornerShape(18.dp),
                     visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                     trailingIcon = {
-                        val icon = if (passwordVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility
+                        val icon = if (passwordVisible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility
                         IconButton(onClick = { passwordVisible = !passwordVisible }) {
                             Icon(imageVector = icon, contentDescription = "Mostrar/Ocultar contraseña")
                         }
@@ -139,7 +144,7 @@ fun LoginScreen(
                         )
                     }
                     Button(
-                        onClick = onRegister,
+                        onClick = { navController.navigate("select_profile") },
                         colors = ButtonDefaults.buttonColors(containerColor = naranja),
                         modifier = Modifier
                             .fillMaxWidth()
@@ -158,7 +163,6 @@ fun LoginScreen(
         }
     }
 }
-
 
 
 //@Composable
@@ -183,7 +187,6 @@ fun LoginScreen(
 //        isPlaying = true
 //    )
 //
-//    // Navegar si loginSuccess es true
 //    LaunchedEffect(uiState.loginSuccess) {
 //        if (uiState.loginSuccess == true) {
 //            onLoginSuccess()
@@ -193,18 +196,6 @@ fun LoginScreen(
 //            viewModel.resetLoginResult()
 //        }
 //    }
-//
-////    LaunchedEffect(uiState.loginSuccess, uiState.errorMsg) {
-////        if (uiState.loginSuccess == true) {
-////            onLoginSuccess()
-////            viewModel.resetLoginResult()
-////        } else if (uiState.loginSuccess == false) {
-////            uiState.errorMsg?.let { msg ->
-////                Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
-////            }
-////            viewModel.resetLoginResult()
-////        }
-////    }
 //
 //    Surface(
 //        modifier = Modifier
@@ -240,6 +231,7 @@ fun LoginScreen(
 //                    onValueChange = { viewModel.onEmailOrPhoneChange(it) },
 //                    label = { Text("Correo electrónico") },
 //                    singleLine = true,
+//                    shape = RoundedCornerShape(18.dp), // redondez amigable
 //                    modifier = Modifier
 //                        .fillMaxWidth()
 //                        .padding(bottom = 16.dp)
@@ -249,6 +241,7 @@ fun LoginScreen(
 //                    onValueChange = { viewModel.onPasswordChange(it) },
 //                    label = { Text("Contraseña") },
 //                    singleLine = true,
+//                    shape = RoundedCornerShape(18.dp), // redondez amigable
 //                    visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
 //                    trailingIcon = {
 //                        val icon = if (passwordVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility
@@ -300,3 +293,5 @@ fun LoginScreen(
 //        }
 //    }
 //}
+
+

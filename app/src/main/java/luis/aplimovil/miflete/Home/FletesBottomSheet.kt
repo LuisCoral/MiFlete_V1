@@ -3,7 +3,6 @@ package luis.aplimovil.miflete.Home
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -14,15 +13,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-import luis.aplimovil.miflete.CrearViaje.Flete
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import java.text.SimpleDateFormat
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 import java.util.Date
 import java.util.Locale
-import kotlin.time.Duration
 
 
 data class Flete(
@@ -45,7 +40,7 @@ data class Flete(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FletesBottomSheet(
-    fletes: List<Flete>,
+    fletes: List<luis.aplimovil.miflete.Home.Flete>,
     azul: Color,
     naranja: Color,
     onClose: () -> Unit,

@@ -43,7 +43,7 @@ fun SelectProfileScreen(
                     onClick = { navController.popBackStack() },
                     modifier = Modifier
                         .align(Alignment.TopStart)
-                        .padding(start = 16.dp, top = 36.dp) // margen respecto al borde superior e izquierdo
+                        .padding(start = 16.dp, top = 36.dp)
                         .size(46.dp)
                         .shadow(6.dp, CircleShape)
                         .background(naranja, CircleShape)
@@ -59,7 +59,7 @@ fun SelectProfileScreen(
                 Column(
                     modifier = Modifier
                         .align(Alignment.Center)
-                        .padding(top = 38.dp), // espacio para que no se encime con el botón
+                        .padding(top = 38.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
@@ -85,19 +85,14 @@ fun SelectProfileScreen(
             verticalArrangement = Arrangement.spacedBy(20.dp, Alignment.Top),
         ) {
             ProfileOptionCard(
-                title = "CONDUCTOR",
-                desc = "Únicamente soy conductor y no poseo ningún vehículo.",
-                onClick = { navController.navigate(AppDestinations.ConductorRegister.route) }
+                title = "Cliente",
+                desc = "¿Necesitas un camión?",
+                onClick = { navController.navigate(AppDestinations.ClienteRegister.route) }
             )
             ProfileOptionCard(
-                title = "CONDUCTOR, POSEEDOR Y/O PROPIETARIO",
-                desc = "Soy conductor y a la vez poseedor o propietario de algún vehículo.",
-                onClick = { navController.navigate(AppDestinations.ConductorPoseedorRegister.route) }
-            )
-            ProfileOptionCard(
-                title = "POSEEDOR O PROPIETARIO",
-                desc = "Soy poseedor o propietario de algún vehículo, pero no soy conductor.",
-                onClick = { navController.navigate(AppDestinations.PropietarioRegister.route) }
+                title = "Transportista",
+                desc = "Conéctate con tu carga",
+                onClick = { navController.navigate(AppDestinations.TransportistaRegister.route) }
             )
         }
     }
