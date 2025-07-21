@@ -15,6 +15,19 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import com.airbnb.lottie.compose.LottieAnimation
+import com.airbnb.lottie.compose.LottieCompositionSpec
+import com.airbnb.lottie.compose.animateLottieCompositionAsState
+import com.airbnb.lottie.compose.rememberLottieComposition
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -36,7 +49,6 @@ data class Flete(
     val fotos: List<String> = emptyList()
 )
 
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FletesBottomSheet(
@@ -47,6 +59,22 @@ fun FletesBottomSheet(
     onActualizar: () -> Unit,
     navController: NavHostController
 ) {
+    val coroutineScope = rememberCoroutineScope()
+    var isLoading by remember { mutableStateOf(false) }
+    var loadingJob by remember { mutableStateOf<Job?>(null) }
+
+    // Función para manejar la animación de carga y actualización
+    fun actualizarConAnimacion() {
+        isLoading = true
+        // Cancela cualquier job de loading anterior
+        loadingJob?.cancel()
+        loadingJob = coroutineScope.launch {
+            onActualizar()
+            delay(1200) // animación visible por al menos 1.2 segundos
+            isLoading = false
+        }
+    }
+
     ModalBottomSheet(
         onDismissRequest = onClose,
         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
@@ -77,9 +105,12 @@ fun FletesBottomSheet(
                         .padding(end = 12.dp)
                 ) {
                     Button(
-                        onClick = onActualizar,
+                        onClick = {
+                            actualizarConAnimacion()
+                        },
                         colors = ButtonDefaults.buttonColors(containerColor = naranja),
-                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp)
+                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
+                        enabled = !isLoading // Deshabilita el botón durante carga
                     ) {
                         Icon(Icons.Default.Refresh, contentDescription = "Actualizar")
                         Spacer(modifier = Modifier.width(6.dp))
@@ -94,103 +125,122 @@ fun FletesBottomSheet(
                 }
             }
             Spacer(Modifier.height(6.dp))
-            if (fletes.isEmpty()) {
-                Text(
-                    text = "No hay fletes disponibles.",
-                    color = Color.Gray,
-                    fontSize = 16.sp,
-                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 16.dp)
-                )
-            } else {
-                LazyColumn(
+
+            if (isLoading) {
+                // Animación Lottie de búsqueda
+                val composition by rememberLottieComposition(LottieCompositionSpec.Asset("search.json"))
+                val progress by animateLottieCompositionAsState(composition)
+                Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .weight(1f, fill = false)
-                        .padding(bottom = 8.dp)
+                        .height(220.dp),
+                    contentAlignment = Alignment.Center
                 ) {
-                    items(fletes) { flete ->
-                        // --- URGENTE LOGIC usando SimpleDateFormat ---
-                        val esUrgente = try {
-                            val formato = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
-                            val fechaFlete = formato.parse(flete.fechaPartida)
-                            val ahora = Date()
-                            if (fechaFlete != null) {
-                                val diferencia = fechaFlete.time - ahora.time
-                                diferencia in 0..(24 * 60 * 60 * 1000) // entre 0 y 24 horas en milisegundos
-                            } else {
+                    LottieAnimation(
+                        composition,
+                        progress,
+                        modifier = Modifier.size(160.dp)
+                    )
+                }
+            } else {
+                if (fletes.isEmpty()) {
+                    Text(
+                        text = "No hay fletes disponibles.",
+                        color = Color.Gray,
+                        fontSize = 16.sp,
+                        modifier = Modifier.padding(horizontal = 20.dp, vertical = 16.dp)
+                    )
+                } else {
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f, fill = false)
+                            .padding(bottom = 8.dp)
+                    ) {
+                        items(fletes) { flete ->
+                            // --- URGENTE LOGIC usando SimpleDateFormat ---
+                            val esUrgente = try {
+                                val formato = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
+                                val fechaFlete = formato.parse(flete.fechaPartida)
+                                val ahora = Date()
+                                if (fechaFlete != null) {
+                                    val diferencia = fechaFlete.time - ahora.time
+                                    diferencia in 0..(24 * 60 * 60 * 1000) // entre 0 y 24 horas en milisegundos
+                                } else {
+                                    false
+                                }
+                            } catch (e: Exception) {
                                 false
                             }
-                        } catch (e: Exception) {
-                            false
-                        }
-                        //----------------------
+                            //----------------------
 
-                        Card(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp, vertical = 6.dp),
-                            colors = CardDefaults.cardColors(containerColor = Color(0xFFF9F9FF)),
-                            elevation = CardDefaults.cardElevation(2.dp),
-                            shape = RoundedCornerShape(16.dp)
-                        ) {
-                            Column(
-                                Modifier
-                                    .padding(16.dp)
+                            Card(
+                                modifier = Modifier
                                     .fillMaxWidth()
+                                    .padding(horizontal = 16.dp, vertical = 6.dp),
+                                colors = CardDefaults.cardColors(containerColor = Color(0xFFF9F9FF)),
+                                elevation = CardDefaults.cardElevation(2.dp),
+                                shape = RoundedCornerShape(16.dp)
                             ) {
-                                Row(
-                                    Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween
+                                Column(
+                                    Modifier
+                                        .padding(16.dp)
+                                        .fillMaxWidth()
                                 ) {
-                                    Column {
-                                        Text("De: ${flete.partida}", color = azul, fontWeight = FontWeight.Medium)
-                                        Text("A: ${flete.destino}", color = azul, fontWeight = FontWeight.Medium)
-                                        Text("Estado: ${flete.estado}", color = Color.Gray, fontSize = 13.sp)
-                                        Text("Mercancía: ${flete.mercancia}", color = azul, fontSize = 13.sp)
-                                        if (flete.pesoAproximado > 0.0) {
-                                            Text("Peso: ${flete.pesoAproximado} kg", color = azul, fontSize = 13.sp)
-                                        }
-                                        if (flete.fechaPartida.isNotBlank()) {
-                                            Text("Salida: ${flete.fechaPartida}", color = azul, fontSize = 13.sp)
-                                            if (esUrgente) {
-                                                Text(
-                                                    text = "URGENTE",
-                                                    color = Color.Red,
-                                                    fontWeight = FontWeight.Bold,
-                                                    fontSize = 16.sp,
-                                                    modifier = Modifier.padding(top = 2.dp)
-                                                )
+                                    Row(
+                                        Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween
+                                    ) {
+                                        Column {
+                                            Text("De: ${flete.partida}", color = azul, fontWeight = FontWeight.Medium)
+                                            Text("A: ${flete.destino}", color = azul, fontWeight = FontWeight.Medium)
+                                            Text("Estado: ${flete.estado}", color = Color.Gray, fontSize = 13.sp)
+                                            Text("Mercancía: ${flete.mercancia}", color = azul, fontSize = 13.sp)
+                                            if (flete.pesoAproximado > 0.0) {
+                                                Text("Peso: ${flete.pesoAproximado} kg", color = azul, fontSize = 13.sp)
+                                            }
+                                            if (flete.fechaPartida.isNotBlank()) {
+                                                Text("Salida: ${flete.fechaPartida}", color = azul, fontSize = 13.sp)
+                                                if (esUrgente) {
+                                                    Text(
+                                                        text = "URGENTE",
+                                                        color = Color.Red,
+                                                        fontWeight = FontWeight.Bold,
+                                                        fontSize = 16.sp,
+                                                        modifier = Modifier.padding(top = 2.dp)
+                                                    )
+                                                }
                                             }
                                         }
+                                        Text(
+                                            "$${"%,.2f".format(flete.valorPropuesto)}",
+                                            color = naranja,
+                                            fontSize = 20.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            modifier = Modifier.alignByBaseline()
+                                        )
                                     }
-                                    Text(
-                                        "$${"%,.2f".format(flete.valorPropuesto)}",
-                                        color = naranja,
-                                        fontSize = 20.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        modifier = Modifier.alignByBaseline()
-                                    )
-                                }
-                                Spacer(Modifier.height(10.dp))
-                                Row(
-                                    Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceEvenly
-                                ) {
-                                    Button(
-                                        onClick = {
-                                            navController.navigate("preview_flete/${flete.id}")
-                                        },
-                                        colors = ButtonDefaults.buttonColors(containerColor = azul)
+                                    Spacer(Modifier.height(10.dp))
+                                    Row(
+                                        Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceEvenly
                                     ) {
-                                        Text("Aceptar flete", color = Color.White)
-                                    }
-                                    Button(
-                                        onClick = {
-                                            navController.navigate("contraoferta/${flete.id}")
-                                        },
-                                        colors = ButtonDefaults.buttonColors(containerColor = naranja)
-                                    ) {
-                                        Text("Contraoferta", color = Color.White)
+                                        Button(
+                                            onClick = {
+                                                navController.navigate("preview_flete/${flete.id}")
+                                            },
+                                            colors = ButtonDefaults.buttonColors(containerColor = azul)
+                                        ) {
+                                            Text("Aceptar flete", color = Color.White)
+                                        }
+                                        Button(
+                                            onClick = {
+                                                navController.navigate("contraoferta/${flete.id}")
+                                            },
+                                            colors = ButtonDefaults.buttonColors(containerColor = naranja)
+                                        ) {
+                                            Text("Contraoferta", color = Color.White)
+                                        }
                                     }
                                 }
                             }
@@ -203,10 +253,12 @@ fun FletesBottomSheet(
     }
 }
 
+
+
 //@OptIn(ExperimentalMaterial3Api::class)
 //@Composable
 //fun FletesBottomSheet(
-//    fletes: List<Flete>,
+//    fletes: List<luis.aplimovil.miflete.Home.Flete>,
 //    azul: Color,
 //    naranja: Color,
 //    onClose: () -> Unit,
@@ -251,9 +303,12 @@ fun FletesBottomSheet(
 //                        Spacer(modifier = Modifier.width(6.dp))
 //                        Text("Actualizar", fontWeight = FontWeight.SemiBold, color = Color.White)
 //                    }
-////                    IconButton(onClick = onClose) {
-////                        Icon(Icons.Default.Close, contentDescription = "Cerrar")
-////                    }
+//                    // Si deseas mostrar el botón de cerrar, descomenta esto:
+//                    /*
+//                    IconButton(onClick = onClose) {
+//                        Icon(Icons.Default.Close, contentDescription = "Cerrar")
+//                    }
+//                    */
 //                }
 //            }
 //            Spacer(Modifier.height(6.dp))
@@ -268,10 +323,26 @@ fun FletesBottomSheet(
 //                LazyColumn(
 //                    modifier = Modifier
 //                        .fillMaxWidth()
-//                        .weight(1f, fill = false) // hace que el LazyColumn use el espacio disponible
+//                        .weight(1f, fill = false)
 //                        .padding(bottom = 8.dp)
 //                ) {
 //                    items(fletes) { flete ->
+//                        // --- URGENTE LOGIC usando SimpleDateFormat ---
+//                        val esUrgente = try {
+//                            val formato = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
+//                            val fechaFlete = formato.parse(flete.fechaPartida)
+//                            val ahora = Date()
+//                            if (fechaFlete != null) {
+//                                val diferencia = fechaFlete.time - ahora.time
+//                                diferencia in 0..(24 * 60 * 60 * 1000) // entre 0 y 24 horas en milisegundos
+//                            } else {
+//                                false
+//                            }
+//                        } catch (e: Exception) {
+//                            false
+//                        }
+//                        //----------------------
+//
 //                        Card(
 //                            modifier = Modifier
 //                                .fillMaxWidth()
@@ -299,6 +370,15 @@ fun FletesBottomSheet(
 //                                        }
 //                                        if (flete.fechaPartida.isNotBlank()) {
 //                                            Text("Salida: ${flete.fechaPartida}", color = azul, fontSize = 13.sp)
+//                                            if (esUrgente) {
+//                                                Text(
+//                                                    text = "URGENTE",
+//                                                    color = Color.Red,
+//                                                    fontWeight = FontWeight.Bold,
+//                                                    fontSize = 16.sp,
+//                                                    modifier = Modifier.padding(top = 2.dp)
+//                                                )
+//                                            }
 //                                        }
 //                                    }
 //                                    Text(
@@ -340,3 +420,5 @@ fun FletesBottomSheet(
 //        }
 //    }
 //}
+
+

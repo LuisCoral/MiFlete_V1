@@ -1,5 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
+    <!-- Tema principal -->
     <style name="Theme.MiFlete" parent="android:Theme.Material.Light.NoActionBar" />
+
+    <!-- Tema splash: igual que el principal o puedes usar otro base -->
+    <style name="Theme.MiFlete.Splash" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="windowSplashScreenBackground">@color/white</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/icono</item>
+        <item name="windowSplashScreenAnimationDuration">1000</item>
+        <item name="postSplashScreenTheme">@style/Theme.MiFlete</item>
+    </style>
 </resources>

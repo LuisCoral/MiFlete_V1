@@ -36,6 +36,7 @@ import androidx.compose.material.icons.filled.Scale
 import java.util.*
 
 
+
 private val azul = Color(0xFF072A53)
 private val naranja = Color(0xFFF47C20)
 private val fondo = Color(0xFFFDF9F5)
@@ -43,7 +44,7 @@ private val fondo = Color(0xFFFDF9F5)
 @Composable
 fun CrearFleteScreen(
     onFleteCreado: () -> Unit,
-    onBack: () -> Unit // <-- Nuevo parámetro para navegación de regreso
+    onBack: () -> Unit
 ) {
     var mercancia by remember { mutableStateOf("") }
     var peso by remember { mutableStateOf("") }
@@ -52,11 +53,11 @@ fun CrearFleteScreen(
     var fechaPartida by remember { mutableStateOf("") }
     var valorPropuesto by remember { mutableStateOf("") }
     var observaciones by remember { mutableStateOf("") }
+    var volumen by remember { mutableStateOf(20f) }
     var loading by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
-    val context = LocalContext.current
 
-    // Soporte para Date y Time picker
+    val context = LocalContext.current
     val calendar = remember { Calendar.getInstance() }
 
     Surface(
@@ -318,6 +319,16 @@ fun CrearFleteScreen(
                         )
                     )
 
+                    // ------------- Slider para volumen de carga -----------
+                    VolumenCuboSlider(
+                        volumen = volumen,
+                        onVolumenChange = { volumen = it },
+                        min = 100f,//
+                        max = 1000f,
+                        azul = azul,
+                        naranja = naranja
+                    )
+
                     if (error != null) {
                         Text(error!!, color = MaterialTheme.colorScheme.error)
                     }
@@ -346,6 +357,7 @@ fun CrearFleteScreen(
                                 "destino" to destino,
                                 "fechaPartida" to fechaPartida,
                                 "valorPropuesto" to valorPropuesto.toDoubleOrNull(),
+                                "volumen" to volumen, // <--- volumen agregado
                                 "estado" to "pendiente",
                                 "observaciones" to observaciones,
                                 "fotos" to listOf<String>()
@@ -391,10 +403,15 @@ fun CrearFleteScreen(
 
 
 
-
+//
+//private val azul = Color(0xFF072A53)
+//private val naranja = Color(0xFFF47C20)
+//private val fondo = Color(0xFFFDF9F5)
+//
 //@Composable
 //fun CrearFleteScreen(
-//    onFleteCreado: () -> Unit
+//    onFleteCreado: () -> Unit,
+//    onBack: () -> Unit // <-- Nuevo parámetro para navegación de regreso
 //) {
 //    var mercancia by remember { mutableStateOf("") }
 //    var peso by remember { mutableStateOf("") }
@@ -427,27 +444,52 @@ fun CrearFleteScreen(
 //                elevation = CardDefaults.cardElevation(10.dp),
 //                shape = RoundedCornerShape(32.dp)
 //            ) {
-//                // Hacer la columna desplazable
 //                Column(
 //                    modifier = Modifier
-//                        .padding(horizontal = 24.dp, vertical = 32.dp)
+//                        .padding(horizontal = 24.dp, vertical = 24.dp)
 //                        .fillMaxWidth()
 //                        .verticalScroll(rememberScrollState()),
-//                    verticalArrangement = Arrangement.spacedBy(16.dp)
+//                    verticalArrangement = Arrangement.spacedBy(14.dp)
 //                ) {
-//                    Text(
-//                        "Crear nuevo flete",
-//                        style = MaterialTheme.typography.titleLarge.copy(
-//                            color = azul,
-//                            fontSize = 26.sp
-//                        ),
-//                        modifier = Modifier.align(Alignment.CenterHorizontally)
-//                    )
+//                    // Barra superior amigable con botón de regreso
+//                    Row(
+//                        Modifier
+//                            .fillMaxWidth()
+//                            .padding(bottom = 12.dp),
+//                        verticalAlignment = Alignment.CenterVertically
+//                    ) {
+//                        IconButton(
+//                            onClick = { onBack() },
+//                            modifier = Modifier
+//                                .size(40.dp)
+//                                .background(azul.copy(alpha = 0.08f), shape = CircleShape)
+//                        ) {
+//                            Icon(
+//                                Icons.Default.ArrowBack,
+//                                contentDescription = "Regresar",
+//                                tint = azul,
+//                                modifier = Modifier.size(26.dp)
+//                            )
+//                        }
+//                        Spacer(Modifier.width(8.dp))
+//                        Text(
+//                            "Crear nuevo flete",
+//                            style = MaterialTheme.typography.titleLarge.copy(
+//                                color = azul,
+//                                fontSize = 24.sp
+//                            ),
+//                            modifier = Modifier.weight(1f)
+//                        )
+//                    }
 //
+//                    Divider(color = naranja.copy(alpha = 0.3f), thickness = 1.dp)
+//
+//                    // Campos amigables
 //                    OutlinedTextField(
 //                        value = mercancia,
 //                        onValueChange = { mercancia = it },
 //                        label = { Text("Tipo de mercancía", color = azul) },
+//                        leadingIcon = { Icon(Icons.Default.LocalShipping, contentDescription = null, tint = naranja) },
 //                        modifier = Modifier
 //                            .fillMaxWidth()
 //                            .clip(RoundedCornerShape(18.dp)),
@@ -455,7 +497,7 @@ fun CrearFleteScreen(
 //                        shape = RoundedCornerShape(18.dp),
 //                        colors = OutlinedTextFieldDefaults.colors(
 //                            focusedBorderColor = naranja,
-//                            unfocusedBorderColor = azul.copy(alpha = 0.3f),
+//                            unfocusedBorderColor = azul.copy(alpha = 0.2f),
 //                            focusedLabelColor = naranja,
 //                            unfocusedLabelColor = azul,
 //                            cursorColor = naranja,
@@ -467,6 +509,7 @@ fun CrearFleteScreen(
 //                        value = peso,
 //                        onValueChange = { peso = it },
 //                        label = { Text("Peso aproximado (kg)", color = azul) },
+//                        leadingIcon = { Icon(Icons.Default.Scale, contentDescription = null, tint = naranja) },
 //                        modifier = Modifier
 //                            .fillMaxWidth()
 //                            .clip(RoundedCornerShape(18.dp)),
@@ -474,7 +517,7 @@ fun CrearFleteScreen(
 //                        shape = RoundedCornerShape(18.dp),
 //                        colors = OutlinedTextFieldDefaults.colors(
 //                            focusedBorderColor = naranja,
-//                            unfocusedBorderColor = azul.copy(alpha = 0.3f),
+//                            unfocusedBorderColor = azul.copy(alpha = 0.2f),
 //                            focusedLabelColor = naranja,
 //                            unfocusedLabelColor = azul,
 //                            cursorColor = naranja,
@@ -486,6 +529,7 @@ fun CrearFleteScreen(
 //                        value = partida,
 //                        onValueChange = { partida = it },
 //                        label = { Text("Punto de partida", color = azul) },
+//                        leadingIcon = { Icon(Icons.Default.Place, contentDescription = null, tint = naranja) },
 //                        modifier = Modifier
 //                            .fillMaxWidth()
 //                            .clip(RoundedCornerShape(18.dp)),
@@ -493,7 +537,7 @@ fun CrearFleteScreen(
 //                        shape = RoundedCornerShape(18.dp),
 //                        colors = OutlinedTextFieldDefaults.colors(
 //                            focusedBorderColor = naranja,
-//                            unfocusedBorderColor = azul.copy(alpha = 0.3f),
+//                            unfocusedBorderColor = azul.copy(alpha = 0.2f),
 //                            focusedLabelColor = naranja,
 //                            unfocusedLabelColor = azul,
 //                            cursorColor = naranja,
@@ -505,6 +549,7 @@ fun CrearFleteScreen(
 //                        value = destino,
 //                        onValueChange = { destino = it },
 //                        label = { Text("Destino", color = azul) },
+//                        leadingIcon = { Icon(Icons.Default.Flag, contentDescription = null, tint = naranja) },
 //                        modifier = Modifier
 //                            .fillMaxWidth()
 //                            .clip(RoundedCornerShape(18.dp)),
@@ -512,7 +557,7 @@ fun CrearFleteScreen(
 //                        shape = RoundedCornerShape(18.dp),
 //                        colors = OutlinedTextFieldDefaults.colors(
 //                            focusedBorderColor = naranja,
-//                            unfocusedBorderColor = azul.copy(alpha = 0.3f),
+//                            unfocusedBorderColor = azul.copy(alpha = 0.2f),
 //                            focusedLabelColor = naranja,
 //                            unfocusedLabelColor = azul,
 //                            cursorColor = naranja,
@@ -520,7 +565,6 @@ fun CrearFleteScreen(
 //                            unfocusedContainerColor = Color(0xFFF9F9FF)
 //                        )
 //                    )
-//                    // Campo de fecha con calendario y hora
 //                    OutlinedTextField(
 //                        value = fechaPartida,
 //                        onValueChange = {},
@@ -529,14 +573,12 @@ fun CrearFleteScreen(
 //                        label = { Text("Fecha de salida", color = azul) },
 //                        trailingIcon = {
 //                            IconButton(onClick = {
-//                                // Primero pide la fecha
 //                                DatePickerDialog(
 //                                    context,
 //                                    { _, year, month, dayOfMonth ->
 //                                        calendar.set(Calendar.YEAR, year)
 //                                        calendar.set(Calendar.MONTH, month)
 //                                        calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth)
-//                                        // Luego pide la hora
 //                                        TimePickerDialog(
 //                                            context,
 //                                            { _, hour, minute ->
@@ -558,21 +600,19 @@ fun CrearFleteScreen(
 //                                    calendar.get(Calendar.DAY_OF_MONTH)
 //                                ).show()
 //                            }) {
-//                                Icon(Icons.Default.DateRange, contentDescription = "Seleccionar fecha")
+//                                Icon(Icons.Default.DateRange, contentDescription = "Seleccionar fecha", tint = naranja)
 //                            }
 //                        },
 //                        modifier = Modifier
 //                            .fillMaxWidth()
 //                            .clip(RoundedCornerShape(18.dp))
 //                            .clickable {
-//                                // Igual que el icono: abre el DatePicker
 //                                DatePickerDialog(
 //                                    context,
 //                                    { _, year, month, dayOfMonth ->
 //                                        calendar.set(Calendar.YEAR, year)
 //                                        calendar.set(Calendar.MONTH, month)
 //                                        calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth)
-//                                        // Luego pide la hora
 //                                        TimePickerDialog(
 //                                            context,
 //                                            { _, hour, minute ->
@@ -598,7 +638,7 @@ fun CrearFleteScreen(
 //                        shape = RoundedCornerShape(18.dp),
 //                        colors = OutlinedTextFieldDefaults.colors(
 //                            focusedBorderColor = naranja,
-//                            unfocusedBorderColor = azul.copy(alpha = 0.3f),
+//                            unfocusedBorderColor = azul.copy(alpha = 0.2f),
 //                            focusedLabelColor = naranja,
 //                            unfocusedLabelColor = azul,
 //                            cursorColor = naranja,
@@ -610,6 +650,7 @@ fun CrearFleteScreen(
 //                        value = valorPropuesto,
 //                        onValueChange = { valorPropuesto = it },
 //                        label = { Text("Valor propuesto ($)", color = azul) },
+//                        leadingIcon = { Icon(Icons.Default.AttachMoney, contentDescription = null, tint = naranja) },
 //                        modifier = Modifier
 //                            .fillMaxWidth()
 //                            .clip(RoundedCornerShape(18.dp)),
@@ -617,7 +658,7 @@ fun CrearFleteScreen(
 //                        shape = RoundedCornerShape(18.dp),
 //                        colors = OutlinedTextFieldDefaults.colors(
 //                            focusedBorderColor = naranja,
-//                            unfocusedBorderColor = azul.copy(alpha = 0.3f),
+//                            unfocusedBorderColor = azul.copy(alpha = 0.2f),
 //                            focusedLabelColor = naranja,
 //                            unfocusedLabelColor = azul,
 //                            cursorColor = naranja,
@@ -629,13 +670,14 @@ fun CrearFleteScreen(
 //                        value = observaciones,
 //                        onValueChange = { observaciones = it },
 //                        label = { Text("Observaciones", color = azul) },
+//                        leadingIcon = { Icon(Icons.Default.Info, contentDescription = null, tint = naranja) },
 //                        modifier = Modifier
 //                            .fillMaxWidth()
 //                            .clip(RoundedCornerShape(18.dp)),
 //                        shape = RoundedCornerShape(18.dp),
 //                        colors = OutlinedTextFieldDefaults.colors(
 //                            focusedBorderColor = naranja,
-//                            unfocusedBorderColor = azul.copy(alpha = 0.3f),
+//                            unfocusedBorderColor = azul.copy(alpha = 0.2f),
 //                            focusedLabelColor = naranja,
 //                            unfocusedLabelColor = azul,
 //                            cursorColor = naranja,
@@ -680,7 +722,6 @@ fun CrearFleteScreen(
 //                            db.collection("fletes")
 //                                .add(flete)
 //                                .addOnSuccessListener { documentRef ->
-//                                    // Aquí actualizamos el campo 'id' con el ID del documento creado
 //                                    documentRef.update("id", documentRef.id)
 //                                        .addOnSuccessListener {
 //                                            loading = false
@@ -714,3 +755,7 @@ fun CrearFleteScreen(
 //        }
 //    }
 //}
+
+
+
+
