@@ -31,6 +31,7 @@ import kotlinx.coroutines.launch
 import luis.aplimovil.miflete.Mapas.PantallaMapaConPermiso
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -42,8 +43,25 @@ import androidx.compose.material3.rememberModalBottomSheetState
 
 
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
+import androidx.compose.material.BottomSheetState
+import androidx.compose.material.BottomSheetValue
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.BottomSheetScaffold
+import androidx.compose.material.icons.filled.DirectionsCar
+import androidx.compose.material.icons.filled.Help
+import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.LocalShipping
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.rememberBottomSheetScaffoldState
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
 
-@OptIn(ExperimentalMaterial3Api::class)
+
+
+
+@OptIn(ExperimentalMaterialApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun HomeClienteScreen(
     navController: NavHostController,
@@ -53,8 +71,11 @@ fun HomeClienteScreen(
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
 
-    val drawerState = rememberDrawerState(DrawerValue.Closed)
     val coroutineScope = rememberCoroutineScope()
+    val drawerState = rememberDrawerState(DrawerValue.Closed)
+    val sheetState = rememberBottomSheetScaffoldState(
+        bottomSheetState = BottomSheetState(BottomSheetValue.Collapsed)
+    )
 
     var editDialogOpen by remember { mutableStateOf(false) }
     var editedNombre by remember { mutableStateOf("") }
@@ -62,9 +83,13 @@ fun HomeClienteScreen(
     var editedEmail by remember { mutableStateOf("") }
     var isSaving by remember { mutableStateOf(false) }
 
-    LaunchedEffect(Unit) {
-        viewModel.loadUserData()
-    }
+    val collapsedPeekHeight = 142.dp // Altura mínima para mostrar solo el drag, título y botón principal
+    val expandedPeekHeight = 380.dp  // Altura cuando el sheet está expandido
+
+    var targetPeekHeight by remember { mutableStateOf(collapsedPeekHeight) }
+    val peekHeightDp by animateDpAsState(targetValue = targetPeekHeight, label = "peekHeightAnim")
+
+    LaunchedEffect(Unit) { viewModel.loadUserData() }
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -103,21 +128,128 @@ fun HomeClienteScreen(
                     Spacer(modifier = Modifier.width(5.dp))
                     Text("Editar información")
                 }
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(Modifier.height(32.dp))
+                Divider(modifier = Modifier.fillMaxWidth())
+                Spacer(Modifier.height(16.dp))
+
+                // Opciones del menú lateral
+                MenuDrawerOption(
+                    icon = Icons.Default.History,
+                    title = "Historial de viajes",
+                    description = "Consulta todos tus viajes realizados y detalles."
+                ) { /* TODO: Navega a historial */ }
+
+                Spacer(Modifier.height(16.dp))
+                MenuDrawerOption(
+                    icon = Icons.Default.Star,
+                    title = "Calificaciones y opiniones",
+                    description = "Próximamente podrás ver y dejar reseñas sobre tus viajes."
+                ) { /* Futuro */ }
+
+                Spacer(Modifier.height(16.dp))
+                MenuDrawerOption(
+                    icon = Icons.Default.Help,
+                    title = "Ayuda y soporte",
+                    description = "¿Necesitas asistencia? Consulta nuestras preguntas frecuentes o contacta soporte."
+                ) { /* TODO: Navega a ayuda */ }
+
+                Spacer(Modifier.height(32.dp))
+                Divider(modifier = Modifier.fillMaxWidth())
+                Spacer(Modifier.height(16.dp))
+                // Mensaje de futuro
+                Text(
+                    text = "🚧 ¡Seguiremos mejorando la app y pronto tendrás nuevas funciones! 🚀",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color(0xFFF47C20),
+                    modifier = Modifier.padding(horizontal = 8.dp),
+                )
+                Spacer(Modifier.weight(1f))
                 Button(
                     onClick = onLogout,
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF072A53))
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF072A53)),
+                    modifier = Modifier.fillMaxWidth()
                 ) {
                     Text("Cerrar sesión", color = Color.White)
                 }
             }
         }
     ) {
-        Scaffold(
+        BottomSheetScaffold(
+            scaffoldState = sheetState,
+            sheetPeekHeight = peekHeightDp,
+            sheetShape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp),
+            sheetContent = {
+                // Drag handle estilo iOS
+                Box(
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Box(
+                        Modifier
+                            .width(60.dp)
+                            .height(6.dp)
+                            .clip(RoundedCornerShape(3.dp))
+                            .background(Color.LightGray)
+                            .clickable {
+                                coroutineScope.launch {
+                                    sheetState.bottomSheetState.expand()
+                                    targetPeekHeight = expandedPeekHeight
+                                }
+                            }
+                    )
+                }
+                Column(
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp)
+                ) {
+                    Text(
+                        text = "¿Qué deseas hacer hoy?",
+                        style = MaterialTheme.typography.titleLarge,
+                        color = Color(0xFF072A53),
+                    )
+                    Spacer(Modifier.height(12.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        // Crear Flete
+                        MenuButton(
+                            icon = Icons.Default.LocalShipping,
+                            label = "Crear Flete",
+                            color = Color(0xFFF47C20),
+                            onClick = { navController.navigate("crear_flete") }
+                        )
+                        Spacer(Modifier.width(20.dp))
+                        // Mis Fletes (fletes publicados por el usuario)
+                        MenuButton(
+                            icon = Icons.Default.History, // O Icons.Default.List
+                            label = "Mis Fletes",
+                            color = Color(0xFF072A53),
+                            onClick = { /* TODO: navega a la pantalla de fletes publicados por el usuario */ }
+                        )
+                        Spacer(Modifier.width(20.dp))
+                        // Próximamente
+                        MenuButtonPlaceholder()
+                    }
+                    Spacer(Modifier.height(18.dp))
+                    // Contenido adicional SOLO cuando está expandido
+                    if (peekHeightDp == expandedPeekHeight) {
+                        Text(
+                            text = "Accede a las funciones principales o desliza hacia arriba para ver más opciones.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = Color.Gray
+                        )
+                    }
+                }
+            },
             topBar = {
                 TopAppBar(
                     title = { Text("Home Cliente", color = Color.White) },
-                    colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFF072A53))
+                    colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFF072A53)),
+                    // Sin navigationIcon aquí
                 )
             }
         ) { padding ->
@@ -127,91 +259,48 @@ fun HomeClienteScreen(
                     .background(Color(0xFFFDF9F5))
                     .padding(padding)
             ) {
-                // Botón menú en la esquina superior izquierda
+                // Botón menú flotante, estilo imagen 4
                 Box(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 8.dp, start = 8.dp)
+                        .padding(top = 16.dp, start = 12.dp)
                         .zIndex(2f)
-                ) {
-                    IconButton(
-                        onClick = { coroutineScope.launch { drawerState.open() } },
-                        modifier = Modifier
-                            .size(48.dp)
-                            .background(Color.White, shape = CircleShape)
-                            .border(
-                                width = 2.dp,
-                                color = Color(0xFFF47C20),
-                                shape = CircleShape
-                            )
-                            .align(Alignment.TopStart)
-                    ) {
-                        Icon(
-                            Icons.Default.Menu,
-                            contentDescription = "Menú",
-                            tint = Color(0xFFF47C20),
-                            modifier = Modifier.size(28.dp)
+                        .size(56.dp)
+                        .background(Color.White, shape = CircleShape)
+                        .border(
+                            width = 3.dp,
+                            color = Color(0xFFF47C20),
+                            shape = CircleShape
                         )
-                    }
+                        .clickable {
+                            coroutineScope.launch { drawerState.open() }
+                        },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Menu,
+                        contentDescription = "Menú",
+                        tint = Color(0xFFF47C20),
+                        modifier = Modifier.size(34.dp)
+                    )
                 }
-
-                // Mapa con ubicación actual
+                // Mapa (toca el mapa para colapsar el sheet a SOLO la sección principal)
                 Box(
-                    modifier = Modifier
+                    Modifier
                         .fillMaxSize()
-                        .zIndex(1f)
+                        .pointerInput(Unit) {
+                            detectTapGestures(
+                                onTap = {
+                                    coroutineScope.launch {
+                                        sheetState.bottomSheetState.collapse()
+                                        targetPeekHeight = collapsedPeekHeight
+                                    }
+                                }
+                            )
+                        }
                 ) {
                     PantallaMapaConPermiso()
                 }
-
-                // Cuadro fijo debajo del mapa para futuras opciones
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .align(Alignment.BottomCenter)
-                        .padding(bottom = 24.dp, start = 24.dp, end = 24.dp)
-                        .zIndex(10f)
-                ) {
-                    Card(
-                        shape = RoundedCornerShape(24.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color.White),
-                        elevation = CardDefaults.cardElevation(10.dp),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(120.dp)
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(horizontal = 24.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(
-                                    text = "Opciones rápidas",
-                                    style = MaterialTheme.typography.titleMedium,
-                                    color = Color(0xFF072A53),
-                                )
-                                Spacer(Modifier.height(6.dp))
-                                Text(
-                                    text = "Accede a funciones importantes desde aquí.",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = Color.Gray
-                                )
-                            }
-                            Button(
-                                onClick = { navController.navigate("crear_flete") },
-                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF47C20)),
-                                shape = RoundedCornerShape(16.dp),
-                                modifier = Modifier.height(48.dp)
-                            ) {
-                                Text("Crear Flete", color = Color.White)
-                            }
-                        }
-                    }
-                }
-
+                // Dialogo de edición (igual que antes)
                 if (editDialogOpen) {
                     AlertDialog(
                         onDismissRequest = { editDialogOpen = false },
@@ -277,10 +366,83 @@ fun HomeClienteScreen(
     }
 }
 
+@Composable
+fun MenuButton(
+    icon: ImageVector,
+    label: String,
+    color: Color,
+    onClick: () -> Unit
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier
+            .width(90.dp)
+            .clickable { onClick() }
+    ) {
+        Box(
+            modifier = Modifier
+                .size(48.dp)
+                .background(color, shape = CircleShape),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(icon, contentDescription = label, tint = Color.White, modifier = Modifier.size(28.dp))
+        }
+        Spacer(modifier = Modifier.height(6.dp))
+        Text(label, style = MaterialTheme.typography.bodyMedium, color = Color.Black)
+    }
+}
 
+@Composable
+fun MenuButtonPlaceholder() {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier
+            .width(90.dp)
+            .alpha(0.4f)
+    ) {
+        Box(
+            modifier = Modifier
+                .size(48.dp)
+                .background(Color.LightGray, shape = CircleShape),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(Icons.Default.Star, contentDescription = "Próximamente", tint = Color.White, modifier = Modifier.size(28.dp))
+        }
+        Spacer(modifier = Modifier.height(6.dp))
+        Text("Próximamente", style = MaterialTheme.typography.bodyMedium, color = Color.Gray)
+    }
+}
 
+@Composable
+fun MenuDrawerOption(
+    icon: ImageVector,
+    title: String,
+    description: String,
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() }
+            .padding(vertical = 8.dp),
+        verticalAlignment = Alignment.Top
+    ) {
+        Box(
+            modifier = Modifier
+                .size(40.dp)
+                .background(Color(0xFFF47C20).copy(alpha = 0.13f), shape = CircleShape),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(icon, contentDescription = title, tint = Color(0xFFF47C20), modifier = Modifier.size(24.dp))
+        }
+        Spacer(modifier = Modifier.width(12.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(title, color = Color(0xFF072A53), style = MaterialTheme.typography.bodyMedium)
+            Text(description, color = Color.Gray, style = MaterialTheme.typography.bodySmall)
+        }
+    }
+}
 
-//
 //@OptIn(ExperimentalMaterial3Api::class)
 //@Composable
 //fun HomeClienteScreen(
@@ -306,7 +468,7 @@ fun HomeClienteScreen(
 //
 //    ModalNavigationDrawer(
 //        drawerState = drawerState,
-//        gesturesEnabled = drawerState.isOpen, // Solo permite swipe para cerrar cuando abierto
+//        gesturesEnabled = drawerState.isOpen,
 //        drawerContent = {
 //            Column(
 //                modifier = Modifier
@@ -365,7 +527,7 @@ fun HomeClienteScreen(
 //                    .background(Color(0xFFFDF9F5))
 //                    .padding(padding)
 //            ) {
-//                // Botón menú en la esquina superior izquierda, encima del mapa y debajo del TopAppBar
+//                // Botón menú en la esquina superior izquierda
 //                Box(
 //                    modifier = Modifier
 //                        .fillMaxWidth()
@@ -394,11 +556,60 @@ fun HomeClienteScreen(
 //                }
 //
 //                // Mapa con ubicación actual
-//                Box(modifier = Modifier
-//                    .fillMaxSize()
-//                    .zIndex(1f)
+//                Box(
+//                    modifier = Modifier
+//                        .fillMaxSize()
+//                        .zIndex(1f)
 //                ) {
 //                    PantallaMapaConPermiso()
+//                }
+//
+//                // Cuadro fijo debajo del mapa para futuras opciones
+//                Box(
+//                    modifier = Modifier
+//                        .fillMaxWidth()
+//                        .align(Alignment.BottomCenter)
+//                        .padding(bottom = 24.dp, start = 24.dp, end = 24.dp)
+//                        .zIndex(10f)
+//                ) {
+//                    Card(
+//                        shape = RoundedCornerShape(24.dp),
+//                        colors = CardDefaults.cardColors(containerColor = Color.White),
+//                        elevation = CardDefaults.cardElevation(10.dp),
+//                        modifier = Modifier
+//                            .fillMaxWidth()
+//                            .height(120.dp)
+//                    ) {
+//                        Row(
+//                            modifier = Modifier
+//                                .fillMaxSize()
+//                                .padding(horizontal = 24.dp),
+//                            verticalAlignment = Alignment.CenterVertically,
+//                            horizontalArrangement = Arrangement.SpaceBetween
+//                        ) {
+//                            Column(modifier = Modifier.weight(1f)) {
+//                                Text(
+//                                    text = "Opciones rápidas",
+//                                    style = MaterialTheme.typography.titleMedium,
+//                                    color = Color(0xFF072A53),
+//                                )
+//                                Spacer(Modifier.height(6.dp))
+//                                Text(
+//                                    text = "Accede a funciones importantes desde aquí.",
+//                                    style = MaterialTheme.typography.bodySmall,
+//                                    color = Color.Gray
+//                                )
+//                            }
+//                            Button(
+//                                onClick = { navController.navigate("crear_flete") },
+//                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF47C20)),
+//                                shape = RoundedCornerShape(16.dp),
+//                                modifier = Modifier.height(48.dp)
+//                            ) {
+//                                Text("Crear Flete", color = Color.White)
+//                            }
+//                        }
+//                    }
 //                }
 //
 //                if (editDialogOpen) {
@@ -465,4 +676,7 @@ fun HomeClienteScreen(
 //        }
 //    }
 //}
+
+
+
 
