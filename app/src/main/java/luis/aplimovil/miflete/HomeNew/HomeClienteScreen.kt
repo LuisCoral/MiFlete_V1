@@ -40,9 +40,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.shadow
 import kotlinx.coroutines.launch
 import androidx.compose.material3.rememberModalBottomSheetState
-
+import androidx.compose.ui.res.painterResource
 
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.BottomSheetState
 import androidx.compose.material.BottomSheetValue
 import androidx.compose.material.ExperimentalMaterialApi
@@ -57,8 +60,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
-
-
+import com.google.firebase.auth.FirebaseAuth
 
 
 @OptIn(ExperimentalMaterialApi::class, ExperimentalMaterial3Api::class)
@@ -83,8 +85,8 @@ fun HomeClienteScreen(
     var editedEmail by remember { mutableStateOf("") }
     var isSaving by remember { mutableStateOf(false) }
 
-    val collapsedPeekHeight = 142.dp // Altura mínima para mostrar solo el drag, título y botón principal
-    val expandedPeekHeight = 380.dp  // Altura cuando el sheet está expandido
+    val collapsedPeekHeight = 142.dp
+    val expandedPeekHeight = 380.dp
 
     var targetPeekHeight by remember { mutableStateOf(collapsedPeekHeight) }
     val peekHeightDp by animateDpAsState(targetValue = targetPeekHeight, label = "peekHeightAnim")
@@ -131,32 +133,26 @@ fun HomeClienteScreen(
                 Spacer(Modifier.height(32.dp))
                 Divider(modifier = Modifier.fillMaxWidth())
                 Spacer(Modifier.height(16.dp))
-
-                // Opciones del menú lateral
                 MenuDrawerOption(
                     icon = Icons.Default.History,
                     title = "Historial de viajes",
                     description = "Consulta todos tus viajes realizados y detalles."
                 ) { /* TODO: Navega a historial */ }
-
                 Spacer(Modifier.height(16.dp))
                 MenuDrawerOption(
                     icon = Icons.Default.Star,
                     title = "Calificaciones y opiniones",
                     description = "Próximamente podrás ver y dejar reseñas sobre tus viajes."
                 ) { /* Futuro */ }
-
                 Spacer(Modifier.height(16.dp))
                 MenuDrawerOption(
                     icon = Icons.Default.Help,
                     title = "Ayuda y soporte",
                     description = "¿Necesitas asistencia? Consulta nuestras preguntas frecuentes o contacta soporte."
                 ) { /* TODO: Navega a ayuda */ }
-
                 Spacer(Modifier.height(32.dp))
                 Divider(modifier = Modifier.fillMaxWidth())
                 Spacer(Modifier.height(16.dp))
-                // Mensaje de futuro
                 Text(
                     text = "🚧 ¡Seguiremos mejorando la app y pronto tendrás nuevas funciones! 🚀",
                     style = MaterialTheme.typography.bodyMedium,
@@ -211,31 +207,35 @@ fun HomeClienteScreen(
                         color = Color(0xFF072A53),
                     )
                     Spacer(Modifier.height(12.dp))
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
+
+                    // NUEVO MENÚ GRID 3xN
+                    val menuItems = listOf(
+                        Triple(Icons.Default.LocalShipping, "Crear Flete", { navController.navigate("crear_flete") }),
+                        Triple(Icons.Default.History, "Mis Fletes", {
+                            val uid = FirebaseAuth.getInstance().currentUser?.uid
+                            if (uid != null) navController.navigate("mis_fletes/$uid")
+                        }),
+                        Triple(Icons.Default.Star, "Próximamente", { })
+                    )
+
+                    LazyVerticalGrid(
+                        columns = GridCells.Fixed(3),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(min = 120.dp, max = 300.dp),
+                        userScrollEnabled = false
                     ) {
-                        // Crear Flete
-                        MenuButton(
-                            icon = Icons.Default.LocalShipping,
-                            label = "Crear Flete",
-                            color = Color(0xFFF47C20),
-                            onClick = { navController.navigate("crear_flete") }
-                        )
-                        Spacer(Modifier.width(20.dp))
-                        // Mis Fletes (fletes publicados por el usuario)
-                        MenuButton(
-                            icon = Icons.Default.History, // O Icons.Default.List
-                            label = "Mis Fletes",
-                            color = Color(0xFF072A53),
-                            onClick = { /* TODO: navega a la pantalla de fletes publicados por el usuario */ }
-                        )
-                        Spacer(Modifier.width(20.dp))
-                        // Próximamente
-                        MenuButtonPlaceholder()
+                        items(menuItems) { (icon, label, action) ->
+                            MenuButton(
+                                icon = icon,
+                                label = label,
+                                color = if (label == "Crear Flete") Color(0xFFF47C20) else Color(0xFF072A53),
+                                onClick = action
+                            )
+                        }
                     }
+
                     Spacer(Modifier.height(18.dp))
-                    // Contenido adicional SOLO cuando está expandido
                     if (peekHeightDp == expandedPeekHeight) {
                         Text(
                             text = "Accede a las funciones principales o desliza hacia arriba para ver más opciones.",
@@ -249,7 +249,6 @@ fun HomeClienteScreen(
                 TopAppBar(
                     title = { Text("Home Cliente", color = Color.White) },
                     colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFF072A53)),
-                    // Sin navigationIcon aquí
                 )
             }
         ) { padding ->
@@ -259,7 +258,7 @@ fun HomeClienteScreen(
                     .background(Color(0xFFFDF9F5))
                     .padding(padding)
             ) {
-                // Botón menú flotante, estilo imagen 4
+                // Botón menú flotante
                 Box(
                     modifier = Modifier
                         .padding(top = 16.dp, start = 12.dp)
@@ -300,7 +299,7 @@ fun HomeClienteScreen(
                 ) {
                     PantallaMapaConPermiso()
                 }
-                // Dialogo de edición (igual que antes)
+                // Dialogo de edición
                 if (editDialogOpen) {
                     AlertDialog(
                         onDismissRequest = { editDialogOpen = false },
@@ -442,6 +441,9 @@ fun MenuDrawerOption(
         }
     }
 }
+
+
+
 
 //@OptIn(ExperimentalMaterial3Api::class)
 //@Composable

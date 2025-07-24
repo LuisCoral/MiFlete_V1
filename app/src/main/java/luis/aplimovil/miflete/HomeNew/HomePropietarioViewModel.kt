@@ -12,6 +12,7 @@ import luis.aplimovil.miflete.Home.Flete
 
 
 data class HomePropietarioUiState(
+    val idUsuario: String = "",
     val nombres: String = "",
     val apellidos: String = "",
     val email: String = "",
@@ -30,7 +31,7 @@ class HomePropietarioViewModel : ViewModel() {
 
     fun loadUserData() {
         val uid = auth.currentUser?.uid ?: return
-        _uiState.update { it.copy(loading = true) }
+        _uiState.update { it.copy(idUsuario = uid, loading = true) }
         val collections = listOf("Propietarios", "ConductorPropietario", "Conductor")
         buscarDatosEnColecciones(uid, collections)
     }

@@ -213,7 +213,7 @@ fun HomePropietarioScreen(
                         val menuItems = listOf(
                             MenuItemData(Icons.Default.History, "Ver Fletes", azul) { showFletesModal = true },
                             MenuItemData(Icons.Default.LocalShipping, "Crear Flete", naranja) { navController.navigate("crear_flete") },
-                            MenuItemData(Icons.Default.List, "Mis Fletes", Color(0xFF388E3C)) { /* TODO: Navega a pantalla de fletes publicados */ },
+                            MenuItemData(Icons.Default.List, "Mis Fletes", Color(0xFF388E3C)) {  navController.navigate("mis_fletes/${uiState.idUsuario}") },
                             MenuItemData(Icons.Default.Star, "Próximamente", Color.LightGray) { /* ... */ },
                             // Puedes agregar más aquí fácilmente
                         )

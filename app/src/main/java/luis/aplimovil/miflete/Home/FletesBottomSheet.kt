@@ -32,7 +32,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-
+///Este es la pantalla que muestra los fletes disponibles
 data class Flete(
     val id: String = "",
     val idCreador: String = "",
@@ -227,7 +227,9 @@ fun FletesBottomSheet(
                                     ) {
                                         Button(
                                             onClick = {
-                                                navController.navigate("preview_flete/${flete.id}")
+                                                if (flete.id.isNotBlank()) {
+                                                    navController.navigate("preview_flete/${flete.id}")
+                                                }
                                             },
                                             colors = ButtonDefaults.buttonColors(containerColor = azul)
                                         ) {
@@ -235,7 +237,9 @@ fun FletesBottomSheet(
                                         }
                                         Button(
                                             onClick = {
-                                                navController.navigate("contraoferta/${flete.id}")
+                                                if (flete.id.isNotBlank()) {
+                                                    navController.navigate("contraoferta/${flete.id}")
+                                                }
                                             },
                                             colors = ButtonDefaults.buttonColors(containerColor = naranja)
                                         ) {
