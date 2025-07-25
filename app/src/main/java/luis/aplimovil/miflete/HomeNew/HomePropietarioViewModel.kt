@@ -16,6 +16,7 @@ data class HomePropietarioUiState(
     val nombres: String = "",
     val apellidos: String = "",
     val email: String = "",
+    val saldo: Double = 1_000_000.0, // Nuevo campo
     val loading: Boolean = false
 )
 
@@ -24,6 +25,7 @@ class HomePropietarioViewModel : ViewModel() {
     private val auth = FirebaseAuth.getInstance()
     private val _uiState = MutableStateFlow(HomePropietarioUiState())
     val uiState: StateFlow<HomePropietarioUiState> = _uiState
+
 
     // ---- NUEVO: Estado para lista de fletes ----
     private val _fletes = MutableStateFlow<List<Flete>>(emptyList())
@@ -34,6 +36,11 @@ class HomePropietarioViewModel : ViewModel() {
         _uiState.update { it.copy(idUsuario = uid, loading = true) }
         val collections = listOf("Propietarios", "ConductorPropietario", "Conductor")
         buscarDatosEnColecciones(uid, collections)
+    }
+
+    fun descontarSaldo(valor: Double) {
+        val nuevoSaldo = (_uiState.value.saldo - valor).let { if (it < 0) 1_000_000.0 else it }
+        _uiState.value = _uiState.value.copy(saldo = nuevoSaldo)
     }
 
     private fun buscarDatosEnColecciones(uid: String, collections: List<String>, index: Int = 0) {
@@ -121,6 +128,7 @@ class HomePropietarioViewModel : ViewModel() {
     // ---- NUEVO: Cargar lista de fletes ----
     fun loadFletes() {
         db.collection("fletes")
+            .whereNotEqualTo("estado", "aceptado")
             .get()
             .addOnSuccessListener { result ->
                 val lista = result.documents.mapNotNull { doc ->
@@ -150,6 +158,15 @@ class HomePropietarioViewModel : ViewModel() {
                 _fletes.value = emptyList()
             }
     }
+
+    fun aceptarFlete(fleteId: String, onSuccess: () -> Unit, onError: (String) -> Unit) {
+        val firestore = FirebaseFirestore.getInstance()
+        firestore.collection("fletes").document(fleteId)
+            .update("estado", "aceptado")
+            .addOnSuccessListener { onSuccess() }
+            .addOnFailureListener { e -> onError(e.message ?: "Error") }
+    }
+
 }
 
 

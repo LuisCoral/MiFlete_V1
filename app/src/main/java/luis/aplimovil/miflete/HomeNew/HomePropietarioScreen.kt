@@ -47,7 +47,9 @@ import luis.aplimovil.miflete.Mapas.PantallaMapaConPermiso
 import luis.aplimovil.miflete.R
 import androidx.compose.material.rememberBottomSheetScaffoldState
 import androidx.compose.material.BottomSheetScaffold
-
+import androidx.compose.material.icons.filled.AccountBalanceWallet
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
 
 
 @OptIn(ExperimentalMaterialApi::class, ExperimentalMaterial3Api::class)
@@ -108,6 +110,39 @@ fun HomePropietarioScreen(
                 Text(text = uiState.apellidos, style = MaterialTheme.typography.bodyMedium)
                 Text(text = uiState.email, style = MaterialTheme.typography.bodySmall, color = Color.Gray)
                 Spacer(modifier = Modifier.height(16.dp))
+
+                // Mostrar saldo actual
+                Spacer(modifier = Modifier.height(16.dp))
+                Card(
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFFFDF9F5)),
+                    elevation = CardDefaults.cardElevation(2.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(
+                        Modifier
+                            .padding(14.dp)
+                            .fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(Icons.Default.AccountBalanceWallet, contentDescription = "Saldo", tint = naranja)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Column {
+                            Text("Saldo disponible", color = azul, fontWeight = FontWeight.Medium)
+                            Text("$${"%,.0f".format(uiState.saldo)} COP", color = naranja, fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                        }
+                    }
+                }
+
+//                Spacer(Modifier.height(16.dp))
+//                MenuDrawerOptionSecond(
+//                    icon = Icons.Default.AccountBalanceWallet,
+//                    title = "Saldo",
+//                    description = "Consulta y administra tu saldo disponible."
+//                ) { /* Futuro: Navega a detalles de saldo */ }
+
+
+
                 // Botón editar
                 Button(
                     onClick = {

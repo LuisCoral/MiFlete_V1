@@ -17,6 +17,7 @@ import luis.aplimovil.miflete.Fletes.MisFletesScreen
 //import luis.aplimovil.miflete.Home.HomeScreen
 import luis.aplimovil.miflete.HomeNew.HomeClienteScreen
 import luis.aplimovil.miflete.HomeNew.HomePropietarioScreen
+import luis.aplimovil.miflete.HomeNew.HomePropietarioViewModel
 import luis.aplimovil.miflete.Login.LoginScreen
 import luis.aplimovil.miflete.Register.Cliente.ClienteRegisterScreen
 import luis.aplimovil.miflete.Register.Conductor.ConductorRegisterScreen
@@ -51,8 +52,11 @@ sealed class AppDestinations(val route: String) {
 
 @Composable
 fun AppNavGraph(
-    navController: NavHostController = rememberNavController()
+    navController: NavHostController = rememberNavController(),
 ) {
+    // Agrega el ViewModel aquí, solo una vez
+    val viewModel: HomePropietarioViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
+
     NavHost(
         navController = navController,
         startDestination = AppDestinations.Login.route
@@ -92,6 +96,7 @@ fun AppNavGraph(
         composable(AppDestinations.HomePropietario.route) {
             HomePropietarioScreen(
                 navController = navController,
+                viewModel = viewModel, // <-- pásalo aquí también si lo necesitas en HomePropietarioScreen
                 onLogout = {
                     navController.navigate(AppDestinations.Login.route) {
                         popUpTo(0)
@@ -100,11 +105,15 @@ fun AppNavGraph(
                 }
             )
         }
-        composable("preview_flete/{fleteId}") { backStackEntry ->
+        composable(AppDestinations.PreviewFlete.route) { backStackEntry ->
             val fleteId = backStackEntry.arguments?.getString("fleteId") ?: ""
-            PreviewFleteScreen(navController = navController, fleteId = fleteId)
+            PreviewFleteScreen(
+                navController = navController,
+                fleteId = fleteId,
+                viewModel = viewModel // <-- ViewModel disponible aquí
+            )
         }
-        composable("contraoferta/{fleteId}") { backStackEntry ->
+        composable(AppDestinations.Contraoferta.route) { backStackEntry ->
             val fleteId = backStackEntry.arguments?.getString("fleteId") ?: ""
             ContraofertaScreen(navController = navController, fleteId = fleteId)
         }
